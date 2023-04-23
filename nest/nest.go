@@ -63,13 +63,29 @@ func (th *Nest) Register(beans ...*Bean) error {
 }
 
 func (th *Nest) Run() error {
-	th.Inject()
-
+	err := th.Inject()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (th *Nest) Inject() {
+func (th *Nest) Inject() error {
+	for _, bean := range th.named {
+		err := th.InjectOne(bean)
+		if err != nil {
+			return err
+		}
+	}
 
+	for _, bean := range th.typed {
+		err := th.InjectOne(bean)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (th *Nest) InjectOne(bean *Bean) error {
@@ -103,23 +119,30 @@ func (th *Nest) InjectOne(bean *Bean) error {
 			)
 		}
 
-		var injectBean any
+		var injectBean *Bean
 		if tag.Name == "" {
 			if ib, ok := th.typed[fieldType]; ok {
 				injectBean = ib
+			} else {
+				return fmt.Errorf(
+					"inject bean not found for field %s in type %s",
+					bean.reflectType.Elem().Field(i).Name,
+					bean.reflectType,
+				)
 			}
-			return fmt.Errorf(
-				"inject bean not found for field %s in type %s",
-				bean.reflectType.Elem().Field(i).Name,
-				bean.reflectType,
-			)
 		} else {
 			if ib, ok := th.named[tag.Name]; ok {
 				injectBean = ib
+			} else {
+				return fmt.Errorf(
+					"inject bean not found for field %s in name %s",
+					bean.reflectType.Elem().Field(i).Name,
+					bean.reflectType,
+				)
 			}
 		}
 
-		field.Set(reflect.ValueOf(injectBean))
+		field.Set(injectBean.reflectValue)
 	}
 
 	return nil
