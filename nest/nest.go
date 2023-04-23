@@ -20,6 +20,7 @@ type Bean struct {
 }
 
 type Nest struct {
+	beans []*Bean
 	named map[string]*Bean
 	typed map[reflect.Type]*Bean
 }
@@ -57,6 +58,7 @@ func (th *Nest) Register(beans ...*Bean) error {
 
 		bean.reflectValue = reflectValue
 		bean.reflectType = reflectType
+		beans = append(beans, bean)
 	}
 
 	return nil
@@ -78,14 +80,7 @@ func (th *Nest) Run() error {
 
 func (th *Nest) Inject() error {
 
-	for _, bean := range th.named {
-		err := th.InjectOne(bean)
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, bean := range th.typed {
+	for _, bean := range th.beans {
 		err := th.InjectOne(bean)
 		if err != nil {
 			return err
@@ -97,13 +92,7 @@ func (th *Nest) Inject() error {
 
 func (th *Nest) callHook() error {
 
-	for _, bean := range th.named {
-		if setup, ok := bean.Value.(BeanLoaded); ok {
-			setup.Loaded()
-		}
-	}
-
-	for _, bean := range th.typed {
+	for _, bean := range th.beans {
 		if setup, ok := bean.Value.(BeanLoaded); ok {
 			setup.Loaded()
 		}
