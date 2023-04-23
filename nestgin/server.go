@@ -101,9 +101,10 @@ func (th *GinServer) Handle(httpMethod, relativePath string, handler server.Hand
 func (th *GinServer) UseInterceptors(interceptors ...server.Interceptor) {
 	for _, interceptor := range interceptors {
 		th.engine.Use(func(ctx *gin.Context) {
-			err := interceptor.Intercept(ctx.MustGet(contextKey).(*context))
+			c := ctx.MustGet(contextKey).(*context)
+			err := interceptor.Intercept(c)
 			if err != nil {
-				ctx.Set(errorKey, err)
+				c.setError(err)
 				ctx.Abort()
 			}
 		})
