@@ -23,7 +23,7 @@ func TestRegister(t *testing.T) {
 
 	testBean := &TestBean{}
 
-	err := nest.Register(&Bean{
+	err := nest.RegisterBean(&Bean{
 		Value: testBean,
 	}, &Bean{
 		Value: &User{Name: "user"},

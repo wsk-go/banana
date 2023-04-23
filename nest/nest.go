@@ -3,6 +3,7 @@ package nest
 import (
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"reflect"
 )
 
@@ -15,18 +16,29 @@ type Bean struct {
 
 	// type
 	reflectType reflect.Type
+
 	// value
 	reflectValue reflect.Value
 }
 
 type Nest struct {
-	beans []*Bean
-	named map[string]*Bean
-	typed map[reflect.Type]*Bean
+	beans       []*Bean
+	controllers []*Bean
+	named       map[string]*Bean
+	typed       map[reflect.Type]*Bean
 }
 
-// Register register object
-func (th *Nest) Register(beans ...*Bean) error {
+func (th *Nest) RegisterController(beans ...*Bean) error {
+	err := th.RegisterBean(beans...)
+	if err != nil {
+		return err
+	}
+	th.controllers = append(th.controllers, beans...)
+	return nil
+}
+
+// RegisterBean register object
+func (th *Nest) RegisterBean(beans ...*Bean) error {
 
 	if th.named == nil {
 		th.named = make(map[string]*Bean)
@@ -65,7 +77,7 @@ func (th *Nest) Register(beans ...*Bean) error {
 }
 
 func (th *Nest) Run() error {
-	err := th.Inject()
+	err := th.inject()
 	if err != nil {
 		return err
 	}
@@ -75,10 +87,13 @@ func (th *Nest) Run() error {
 		return err
 	}
 
+	engine := gin.Default()
+	engine.PUT()
+
 	return nil
 }
 
-func (th *Nest) Inject() error {
+func (th *Nest) inject() error {
 
 	for _, bean := range th.beans {
 		err := th.InjectOne(bean)
@@ -99,6 +114,14 @@ func (th *Nest) callHook() error {
 	}
 
 	return nil
+}
+
+func (th *Nest) handleMapping(gin *gin.Engine) {
+	for _, controller := range th.controllers {
+		for i := 0; i < controller.reflectValue.Elem().NumField(); i++ {
+
+		}
+	}
 }
 
 func (th *Nest) InjectOne(bean *Bean) error {
