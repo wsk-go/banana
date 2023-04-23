@@ -1,8 +1,8 @@
 // Package inject provides a reflect based injector. A large application built
 // with dependency injection in mind will typically involve the boring work of
-// setting up the object graph. This library attempts to take care of this
+// setting up the object nest. This library attempts to take care of this
 // boring work by creating and connecting the various objects. Its use involves
-// you seeding the object graph with some (possibly incomplete) objects, where
+// you seeding the object nest with some (possibly incomplete) objects, where
 // the underlying types have been tagged for injection. Given this, the
 // library will populate the objects creating new ones as necessary. It uses
 // singletons by default, supports optional private instances as well as named
@@ -33,12 +33,12 @@ import (
 )
 
 // Logger allows for simple logging as inject traverses and populates the
-// object graph.
+// object nest.
 type Logger interface {
 	Debugf(format string, v ...interface{})
 }
 
-// Populate is a short-hand for populating a graph with the given incomplete
+// Populate is a short-hand for populating a nest with the given incomplete
 // object values.
 func Populate(values ...interface{}) error {
 	var g Graph
@@ -163,7 +163,7 @@ func (g *Graph) Populate() error {
 	}
 
 	// We append and modify our slice as we go along, so we don't use a standard
-	// range loop, and do a single pass thru each object in our graph.
+	// range loop, and do a single pass thru each object in our nest.
 	i := 0
 	for {
 		if i == len(g.unnamed) {
