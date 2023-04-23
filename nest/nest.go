@@ -3,7 +3,7 @@ package nest
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
+	"github.com/JackWSK/go-nest/server"
 	"reflect"
 )
 
@@ -76,7 +76,7 @@ func (th *Nest) RegisterBean(beans ...*Bean) error {
 	return nil
 }
 
-func (th *Nest) Run() error {
+func (th *Nest) Run(server server.Server) error {
 	err := th.inject()
 	if err != nil {
 		return err
@@ -87,8 +87,11 @@ func (th *Nest) Run() error {
 		return err
 	}
 
-	engine := gin.Default()
-	engine.PUT()
+	err = th.handleMapping(server)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -116,12 +119,20 @@ func (th *Nest) callHook() error {
 	return nil
 }
 
-func (th *Nest) handleMapping(gin *gin.Engine) {
+func (th *Nest) handleMapping(s server.Server) error {
 	for _, controller := range th.controllers {
-		for i := 0; i < controller.reflectValue.Elem().NumField(); i++ {
-
+		for i := 0; i < controller.reflectValue.NumMethod(); i++ {
+			method := controller.reflectValue.Method(i)
+			values := method.Call(nil)
+			if len(values) > 0 {
+				if mapping, ok := values[0].Interface().(server.Mapping); ok {
+					s.Handle(mapping.GetMethod(), mapping.GetPath(), mapping.GetHandler())
+				}
+			}
 		}
 	}
+
+	return nil
 }
 
 func (th *Nest) InjectOne(bean *Bean) error {
