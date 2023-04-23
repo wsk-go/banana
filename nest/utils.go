@@ -10,16 +10,14 @@ var errInvalidTag = errors.New("invalid tag")
 
 var (
 	injectOnly = &tag{}
-	//injectPrivate = &tag{Private: true}
-	//injectInline  = &tag{Inline: true}
 )
 
 type tag struct {
 	Name string
 }
 
-func parseTag(t string) (*tag, error) {
-	found, value, err := Extract("inject", t)
+func parseTag(t reflect.StructTag) (*tag, error) {
+	found, value, err := Extract("inject", string(t))
 	if err != nil {
 		return nil, err
 	}
@@ -30,12 +28,6 @@ func parseTag(t string) (*tag, error) {
 	if value == "" {
 		return injectOnly, nil
 	}
-	//if value == "inline" {
-	//	return injectInline, nil
-	//}
-	//if value == "private" {
-	//	return injectPrivate, nil
-	//}
 
 	return &tag{Name: value}, nil
 }

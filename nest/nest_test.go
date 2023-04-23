@@ -9,7 +9,7 @@ type User struct {
 }
 
 type TestBean struct {
-	User  *User `inject:""`
+	User  *User `json:"user" inject:""`
 	User2 *User `inject:"user2"`
 }
 

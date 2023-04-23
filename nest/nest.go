@@ -94,7 +94,7 @@ func (th *Nest) InjectOne(bean *Bean) error {
 		fieldType := field.Type()
 		fieldTag := bean.reflectType.Elem().Field(i).Tag
 		//fieldName := bean.reflectType.Elem().Field(i).Name
-		tag, err := parseTag(string(fieldTag))
+		tag, err := parseTag(fieldTag)
 
 		if err != nil {
 			return fmt.Errorf(
