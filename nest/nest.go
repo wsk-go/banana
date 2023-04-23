@@ -26,6 +26,9 @@ type Nest struct {
 	controllers []*Bean
 	named       map[string]*Bean
 	typed       map[reflect.Type]*Bean
+
+	// server
+	server server.Server
 }
 
 func (th *Nest) RegisterController(beans ...*Bean) error {
@@ -76,7 +79,12 @@ func (th *Nest) RegisterBean(beans ...*Bean) error {
 	return nil
 }
 
-func (th *Nest) Run(server server.Server) error {
+// set Server
+func (th *Nest) useServer(s server.Server) {
+	th.server = s
+}
+
+func (th *Nest) Run(addr string) error {
 	err := th.inject()
 	if err != nil {
 		return err
@@ -87,13 +95,14 @@ func (th *Nest) Run(server server.Server) error {
 		return err
 	}
 
-	err = th.handleMapping(server)
+	err = th.handleMapping()
 
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return th.server.Run(addr)
+
 }
 
 func (th *Nest) inject() error {
@@ -119,14 +128,14 @@ func (th *Nest) callHook() error {
 	return nil
 }
 
-func (th *Nest) handleMapping(s server.Server) error {
+func (th *Nest) handleMapping() error {
 	for _, controller := range th.controllers {
 		for i := 0; i < controller.reflectValue.NumMethod(); i++ {
 			method := controller.reflectValue.Method(i)
 			values := method.Call(nil)
 			if len(values) > 0 {
 				if mapping, ok := values[0].Interface().(server.Mapping); ok {
-					s.Handle(mapping.GetMethod(), mapping.GetPath(), mapping.GetHandler())
+					th.server.Handle(mapping.GetMethod(), mapping.GetPath(), mapping.GetHandler())
 				}
 			}
 		}

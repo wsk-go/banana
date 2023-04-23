@@ -13,19 +13,18 @@ type GinServer struct {
 func New() *GinServer {
 	engine := gin.Default()
 
-	// handler
+	// middleware
 	engine.Use(func(ctx *gin.Context) {
 		ctx.Next()
-		if err, ok := ctx.Get("__err__"); ok {
-			ctx.AbortWithError(500, fmt.Errorf("%+v", err))
-		} else {
-			if body, ok := ctx.Get("__body__"); ok {
-				ctx.JSON(200, body)
-			}
+		if err, ok := ctx.Get("__err__"); ok && err != nil {
+			ctx.String(500, fmt.Sprintf("%+v", err))
+		} else if body, ok := ctx.Get("__body__"); ok {
+			ctx.JSON(200, body)
 		}
+		_ = ctx.AbortWithError(500, fmt.Errorf("something went wrong"))
 	})
 	return &GinServer{
-		engine: gin.Default(),
+		engine: engine,
 	}
 }
 

@@ -22,6 +22,17 @@ func (th *UserController) HelloWorld() server.Mapping {
 	}
 }
 
+func (th *UserController) HelloWorld2() server.Mapping {
+	return server.GetMapping{
+		Path: "/hello2",
+		Handler: func(ctx server.Context) (body any, err error) {
+			return gin.H{
+				"msg": "success",
+			}, fmt.Errorf("xxxx")
+		},
+	}
+}
+
 type User struct {
 	Name string
 }
@@ -61,8 +72,8 @@ func TestRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	s := nestgin.New()
-	err = nest.Run(s)
+	nest.useServer(nestgin.New())
+	err = nest.Run("0.0.0.0:9222")
 	if err != nil {
 		t.Fatal(err)
 	}
