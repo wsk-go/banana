@@ -67,10 +67,17 @@ func (th *Nest) Run() error {
 	if err != nil {
 		return err
 	}
+
+	err = th.callHook()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (th *Nest) Inject() error {
+
 	for _, bean := range th.named {
 		err := th.InjectOne(bean)
 		if err != nil {
@@ -82,6 +89,23 @@ func (th *Nest) Inject() error {
 		err := th.InjectOne(bean)
 		if err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func (th *Nest) callHook() error {
+
+	for _, bean := range th.named {
+		if setup, ok := bean.Value.(BeanLoaded); ok {
+			setup.Loaded()
+		}
+	}
+
+	for _, bean := range th.typed {
+		if setup, ok := bean.Value.(BeanLoaded); ok {
+			setup.Loaded()
 		}
 	}
 

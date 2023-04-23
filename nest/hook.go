@@ -1,5 +1,5 @@
 package nest
 
-type BeanSetup interface {
-	Setup()
+type BeanLoaded interface {
+	Loaded()
 }

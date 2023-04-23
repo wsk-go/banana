@@ -1,6 +1,7 @@
 package nest
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -11,6 +12,10 @@ type User struct {
 type TestBean struct {
 	User  *User `json:"user" inject:""`
 	User2 *User `inject:"user2"`
+}
+
+func (t *TestBean) Loaded() {
+	fmt.Println("loaded")
 }
 
 func TestRegister(t *testing.T) {
