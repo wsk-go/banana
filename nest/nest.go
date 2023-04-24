@@ -21,6 +21,10 @@ type Bean struct {
 	reflectValue reflect.Value
 }
 
+type MethodMapping struct {
+	method reflect.Method
+}
+
 type Nest struct {
 	beans       []*Bean
 	controllers []*Bean
@@ -130,11 +134,11 @@ func (th *Nest) callHook() error {
 
 func (th *Nest) handleMapping() error {
 	for _, controller := range th.controllers {
-		for i := 0; i < controller.reflectValue.NumMethod(); i++ {
-			method := controller.reflectValue.Method(i)
-			values := method.Call(nil)
-			if len(values) > 0 {
-				if mapping, ok := values[0].Interface().(server.Mapping); ok {
+		for i := 0; i < controller.reflectType.NumMethod(); i++ {
+			if isMappingMethod(controller.reflectType.Method(i)) {
+				method := controller.reflectValue.Method(i)
+				value := method.Call(nil)[0]
+				if mapping, ok := value.Interface().(server.Mapping); ok {
 					th.server.Handle(mapping.GetMethod(), mapping.GetPath(), mapping.GetHandler())
 				}
 			}

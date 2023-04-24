@@ -2,6 +2,7 @@ package nest
 
 import (
 	"errors"
+	"github.com/JackWSK/go-nest/server"
 	"reflect"
 	"strconv"
 )
@@ -86,4 +87,15 @@ func Extract(name, tag string) (found bool, value string, err error) {
 
 func isStructPtr(t reflect.Type) bool {
 	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct
+}
+
+var mappingType = reflect.TypeOf((*server.Mapping)(nil)).Elem()
+
+func isMappingMethod(method reflect.Method) bool {
+	if method.Type.NumOut() == 1 {
+		mt := method.Type.Out(0)
+		return mappingType.AssignableTo(mt)
+	}
+
+	return false
 }

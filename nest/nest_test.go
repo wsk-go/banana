@@ -5,6 +5,7 @@ import (
 	"github.com/JackWSK/go-nest/nestgin"
 	"github.com/JackWSK/go-nest/server"
 	"github.com/gin-gonic/gin"
+	"reflect"
 	"testing"
 )
 
@@ -78,4 +79,19 @@ func TestRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
+}
+
+func TestReflect(t *testing.T) {
+	u := reflect.TypeOf(&UserController{})
+	m := u.Method(0)
+
+	tt := m.Type.Out(0)
+	fmt.Println(reflect.TypeOf((*server.Mapping)(nil)).Elem().AssignableTo(tt))
+}
+
+func TestReflect2(t *testing.T) {
+	//u := reflect.ValueOf(&UserController{})
+	//m := u.Method(0)
+	//
+	//fmt.Println(reflect.TypeOf((*server.Mapping)(nil)).Elem().AssignableTo(tt))
 }
