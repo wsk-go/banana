@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/JackWSK/go-nest/server"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 const errorKey = "__err__"
@@ -16,6 +17,10 @@ type context struct {
 
 func (th *context) Next() {
 	th.c.Next()
+}
+
+func (th *context) JSON(code int, obj any) {
+	th.c.JSON(code, obj)
 }
 
 func (th *context) GetBody() any {
@@ -41,8 +46,8 @@ func (th *context) GetError() error {
 }
 
 type GinServer struct {
-	engine        *gin.Engine
-	errorHandlers []server.ExceptionHandler
+	engine            *gin.Engine
+	exceptionHandlers []server.ExceptionHandler
 }
 
 func New() *GinServer {
@@ -68,16 +73,16 @@ func New() *GinServer {
 	return server
 }
 
-func defaultHandler(ctx *gin.Context) {
-	ctx.Next()
-	if err, ok := ctx.Get(errorKey); ok && err != nil {
-		ctx.String(500, fmt.Sprintf("%+v", err))
-		return
-	} else if body, ok := ctx.Get(bodyKey); ok {
-		ctx.JSON(200, body)
-		return
-	}
-	_ = ctx.AbortWithError(500, fmt.Errorf("something went wrong"))
+func (th *GinServer) handleWrite() {
+	th.engine.Use(func(ctx *gin.Context) {
+		c := ctx.MustGet(contextKey).(*context)
+		ctx.Next()
+		if err := c.GetError(); err != nil {
+			ctx.String(http.StatusInternalServerError, fmt.Sprintf("%v", err))
+		} else {
+			//ctx.Data(http.StatusOK)
+		}
+	})
 }
 
 func (th *GinServer) handleException() {
@@ -86,8 +91,8 @@ func (th *GinServer) handleException() {
 		defer func() {
 			err := recover()
 			if err != nil {
-				if len(th.errorHandlers) > 0 {
-					for _, handler := range th.errorHandlers {
+				if len(th.exceptionHandlers) > 0 {
+					for _, handler := range th.exceptionHandlers {
 						body := handler.HandlePanic(c, err)
 						c.SetError(nil)
 						c.SetBody(body)
@@ -99,9 +104,9 @@ func (th *GinServer) handleException() {
 		}()
 		ctx.Next()
 		if err := c.GetError(); err != nil {
-			if len(th.errorHandlers) > 0 {
+			if len(th.exceptionHandlers) > 0 {
 				c.SetError(nil)
-				for _, handler := range th.errorHandlers {
+				for _, handler := range th.exceptionHandlers {
 					body := handler.HandleError(c, err)
 					c.SetBody(body)
 				}
