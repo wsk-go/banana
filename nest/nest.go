@@ -42,17 +42,17 @@ type Nest struct {
 	app *fiber.App
 }
 
-func New() *Nest {
-	return NewWithConfig(Config{})
-}
-
-func NewWithConfig(config Config) *Nest {
+func New(config Config) *Nest {
 	if config.app == nil {
 		config.app = DefaultApp()
 	}
 	return &Nest{
 		app: config.app,
 	}
+}
+
+func (th *Nest) App() *fiber.App {
+	return th.app
 }
 
 func (th *Nest) RegisterController(beans ...*Bean) error {

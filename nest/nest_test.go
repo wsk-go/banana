@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	_recover "github.com/gofiber/fiber/v2/middleware/recover"
 	"reflect"
 	"testing"
 )
@@ -15,8 +17,8 @@ func (th *UserController) HelloWorld() Mapping {
 	return GetMapping{
 		Path: "/hello",
 		Handler: func(ctx *fiber.Ctx) error {
-			return fmt.Errorf("xxxx")
-			//return ctx.JSON(fiber.Map{"msg": "success"})
+
+			return ctx.JSON(fiber.Map{"msg": "success"})
 		},
 	}
 }
@@ -45,6 +47,7 @@ func (t *TestBean) Loaded() {
 
 func TestRegister(t *testing.T) {
 	app := fiber.New(fiber.Config{
+
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
 			return ctx.JSON(gin.H{
 				"success": false,
@@ -54,7 +57,22 @@ func TestRegister(t *testing.T) {
 		},
 	})
 
-	var nest = NewWithConfig(Config{
+	app.Use(cors.New())
+	app.Use(_recover.New())
+	app.Use(func(ctx *fiber.Ctx) (err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				_ = ctx.JSON(fiber.Map{
+					"success": false,
+					"code":    0,
+					"message": fmt.Sprintf("%v", r),
+				})
+			}
+		}()
+
+		return ctx.Next()
+	})
+	var nest = New(Config{
 		app: app,
 	})
 
