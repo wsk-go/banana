@@ -1,12 +1,18 @@
-package logger
+package nestzap
 
 import (
-	"errors"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 )
+
+type LoggerConfig struct {
+	Level  zapcore.Level
+	Writer io.Writer
+
+	LevelWriter map[zapcore.Level]io.Writer
+}
 
 type Logger struct {
 	defaultLogger  *zap.Logger
@@ -14,17 +20,25 @@ type Logger struct {
 }
 
 // NewLogger defaultLogger 默认输出的logger
-func NewLogger(defaultLogger *zap.Logger) *Logger {
-	if defaultLogger == nil {
-		panic(errors.New("defaultLogger must not be nil"))
+func NewLogger(config LoggerConfig) *Logger {
+
+	logger := &Logger{defaultLogger: NewZapLogger(config.Level, config.Writer),
+		loggerForLevel: make(map[zapcore.Level]*zap.Logger),
 	}
-	return &Logger{defaultLogger: defaultLogger, loggerForLevel: make(map[zapcore.Level]*zap.Logger)}
+
+	if len(config.LevelWriter) > 0 {
+		for k, v := range config.LevelWriter {
+			logger.ConfigureLoggerForLevel(k, v)
+		}
+	}
+
+	return logger
 }
 
 // ConfigureLoggerForLevel 配置level对应的logger
 // 如果没有找到，则使用defaultLogger
-func (th *Logger) ConfigureLoggerForLevel(level zapcore.Level, logger *zap.Logger) *Logger {
-	th.loggerForLevel[level] = logger
+func (th *Logger) ConfigureLoggerForLevel(level zapcore.Level, writer io.Writer) *Logger {
+	th.loggerForLevel[level] = NewZapLogger(level, writer)
 	return th
 }
 
@@ -62,12 +76,10 @@ func (th *Logger) determineLogger(level zapcore.Level) *zap.Logger {
 	if logger, ok := th.loggerForLevel[level]; ok {
 		return logger
 	}
-
 	return th.defaultLogger
 }
 
 func NewZapLogger(level zapcore.Level, writer io.Writer) *zap.Logger {
-
 	// 设置日志级别
 	atomicLevel := zap.NewAtomicLevel()
 	atomicLevel.SetLevel(level)
@@ -75,8 +87,8 @@ func NewZapLogger(level zapcore.Level, writer io.Writer) *zap.Logger {
 	//公用编码器
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:        "time",
-		LevelKey:       "level",
-		NameKey:        "logger",
+		LevelKey:       "Level",
+		NameKey:        "nestzap",
 		CallerKey:      "linenum",
 		MessageKey:     "msg",
 		StacktraceKey:  "stacktrace",

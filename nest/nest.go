@@ -30,7 +30,7 @@ type MethodMapping struct {
 }
 
 type Config struct {
-	app *fiber.App
+	Engine *fiber.App
 }
 
 type Nest struct {
@@ -39,20 +39,41 @@ type Nest struct {
 	named       map[string]*Bean
 	typed       map[reflect.Type]*Bean
 
-	app *fiber.App
+	engine *fiber.App
 }
 
 func New(config Config) *Nest {
-	if config.app == nil {
-		config.app = DefaultApp()
+	if config.Engine == nil {
+		config.Engine = DefaultApp()
 	}
 	return &Nest{
-		app: config.app,
+		engine: config.Engine,
 	}
 }
 
-func (th *Nest) App() *fiber.App {
-	return th.app
+func (th *Nest) Engine() *fiber.App {
+	return th.engine
+}
+
+// Import Module
+func (th *Nest) Import(modules ...*Module) error {
+	for _, module := range modules {
+		if len(module.Beans) > 0 {
+			err := th.RegisterBean(module.Beans...)
+			if err != nil {
+				return err
+			}
+		}
+
+		if len(module.Controllers) > 0 {
+			err := th.RegisterController(module.Controllers...)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }
 
 func (th *Nest) RegisterController(beans ...*Bean) error {
@@ -97,7 +118,7 @@ func (th *Nest) RegisterBean(beans ...*Bean) error {
 
 		bean.reflectValue = reflectValue
 		bean.reflectType = reflectType
-		beans = append(beans, bean)
+		th.beans = append(th.beans, bean)
 	}
 
 	return nil
@@ -120,7 +141,7 @@ func (th *Nest) Run(addr string) error {
 		return err
 	}
 
-	return th.app.Listen(addr)
+	return th.engine.Listen(addr)
 
 }
 
@@ -154,7 +175,7 @@ func (th *Nest) handleMapping() error {
 				method := controller.reflectValue.Method(i)
 				value := method.Call(nil)[0]
 				if mapping, ok := value.Interface().(Mapping); ok {
-					th.app.Add(mapping.GetMethod(), mapping.GetPath(), mapping.GetHandler())
+					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), mapping.GetHandler())
 				}
 			}
 		}
