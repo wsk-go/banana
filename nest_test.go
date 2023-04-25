@@ -10,19 +10,20 @@ import (
 	_recover "github.com/gofiber/fiber/v2/middleware/recover"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
+	"io"
 	"reflect"
 	"testing"
 )
 
 type UserController struct {
-	Logger *zap.Logger `inject:""`
+	Logger *nestzap.Logger `inject:""`
 }
 
 func (th *UserController) HelloWorld() nest.Mapping {
 	return nest.GetMapping{
 		Path: "/hello",
 		Handler: func(ctx *fiber.Ctx) error {
+			th.Logger.Info("hello world", zap.Any("aaa", "bbb"))
 			th.Logger.Error("hello world", zap.Any("aaa", "bbb"))
 			return ctx.JSON(fiber.Map{"msg": "success"})
 		},
@@ -86,7 +87,10 @@ func TestRegister(t *testing.T) {
 
 	err := application.Import(nestzap.Module(nestzap.LoggerConfig{
 		Level:  zapcore.DebugLevel,
-		Writer: os.Stdout,
+		Writer: nestzap.NewFileWriter("logger.default"),
+		LevelWriter: map[zapcore.Level]io.Writer{
+			zapcore.InfoLevel: nestzap.NewFileWriter("logger.info"),
+		},
 	}))
 
 	if err != nil {
