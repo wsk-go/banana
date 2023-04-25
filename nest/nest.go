@@ -3,9 +3,13 @@ package nest
 import (
 	"errors"
 	"fmt"
-	"github.com/JackWSK/go-nest/server"
+	"github.com/gofiber/fiber/v2"
 	"reflect"
 )
+
+func DefaultApp() *fiber.App {
+	return fiber.New()
+}
 
 type Bean struct {
 	// the object you try to register
@@ -25,14 +29,30 @@ type MethodMapping struct {
 	method reflect.Method
 }
 
+type Config struct {
+	app *fiber.App
+}
+
 type Nest struct {
 	beans       []*Bean
 	controllers []*Bean
 	named       map[string]*Bean
 	typed       map[reflect.Type]*Bean
 
-	// server
-	server server.Server
+	app *fiber.App
+}
+
+func New() *Nest {
+	return NewWithConfig(Config{})
+}
+
+func NewWithConfig(config Config) *Nest {
+	if config.app == nil {
+		config.app = DefaultApp()
+	}
+	return &Nest{
+		app: config.app,
+	}
 }
 
 func (th *Nest) RegisterController(beans ...*Bean) error {
@@ -83,11 +103,6 @@ func (th *Nest) RegisterBean(beans ...*Bean) error {
 	return nil
 }
 
-// set Server
-func (th *Nest) useServer(s server.Server) {
-	th.server = s
-}
-
 func (th *Nest) Run(addr string) error {
 	err := th.inject()
 	if err != nil {
@@ -105,7 +120,7 @@ func (th *Nest) Run(addr string) error {
 		return err
 	}
 
-	return th.server.Run(addr)
+	return th.app.Listen(addr)
 
 }
 
@@ -138,8 +153,8 @@ func (th *Nest) handleMapping() error {
 			if isMappingMethod(controller.reflectType.Method(i)) {
 				method := controller.reflectValue.Method(i)
 				value := method.Call(nil)[0]
-				if mapping, ok := value.Interface().(server.Mapping); ok {
-					th.server.Handle(mapping.GetMethod(), mapping.GetPath(), mapping.GetHandler())
+				if mapping, ok := value.Interface().(Mapping); ok {
+					th.app.Add(mapping.GetMethod(), mapping.GetPath(), mapping.GetHandler())
 				}
 			}
 		}

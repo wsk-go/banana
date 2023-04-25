@@ -1,10 +1,11 @@
-package server
+package nest
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"net/http"
 )
 
-type HandlerFunc func(ctx Context) (body any, err error)
+type HandlerFunc fiber.Handler
 
 type Mapping interface {
 	GetMethod() string
