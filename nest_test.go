@@ -2,8 +2,8 @@ package go_nest
 
 import (
 	"fmt"
-	"github.com/JackWSK/go-nest/defines"
-	"github.com/JackWSK/go-nest/zap"
+	"github.com/JackWSK/banana/defines"
+	"github.com/JackWSK/banana/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"

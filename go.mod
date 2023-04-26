@@ -1,4 +1,4 @@
-module github.com/JackWSK/go-nest
+module github.com/JackWSK/banana
 
 go 1.20
 

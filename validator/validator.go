@@ -1,7 +1,7 @@
 package validator
 
 import (
-	"github.com/JackWSK/go-nest/errors"
+	"github.com/JackWSK/banana/errors"
 	"github.com/go-playground/locales/en"
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"

@@ -3,7 +3,7 @@ package go_nest
 import (
 	"errors"
 	"fmt"
-	"github.com/JackWSK/go-nest/defines"
+	"github.com/JackWSK/banana/defines"
 	"github.com/gofiber/fiber/v2"
 	"reflect"
 )

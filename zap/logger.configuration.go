@@ -1,7 +1,7 @@
 package zap
 
 import (
-	"github.com/JackWSK/go-nest/defines"
+	"github.com/JackWSK/banana/defines"
 )
 
 func Configuration(config LoggerConfig) *defines.Configuration {
