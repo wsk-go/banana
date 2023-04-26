@@ -20,7 +20,7 @@ type Config struct {
 	Engine *fiber.App
 }
 
-type Nest struct {
+type Banana struct {
 	beans       []*defines.Bean
 	controllers []*defines.Bean
 	named       map[string]*defines.Bean
@@ -29,21 +29,21 @@ type Nest struct {
 	engine *fiber.App
 }
 
-func New(config Config) *Nest {
+func New(config Config) *Banana {
 	if config.Engine == nil {
 		config.Engine = DefaultApp()
 	}
-	return &Nest{
+	return &Banana{
 		engine: config.Engine,
 	}
 }
 
-func (th *Nest) Engine() *fiber.App {
+func (th *Banana) Engine() *fiber.App {
 	return th.engine
 }
 
 // Import Configuration
-func (th *Nest) Import(modules ...*defines.Configuration) error {
+func (th *Banana) Import(modules ...*defines.Configuration) error {
 	for _, module := range modules {
 		if len(module.Beans) > 0 {
 			err := th.RegisterBean(module.Beans...)
@@ -63,7 +63,7 @@ func (th *Nest) Import(modules ...*defines.Configuration) error {
 	return nil
 }
 
-func (th *Nest) RegisterController(beans ...*defines.Bean) error {
+func (th *Banana) RegisterController(beans ...*defines.Bean) error {
 	err := th.RegisterBean(beans...)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func (th *Nest) RegisterController(beans ...*defines.Bean) error {
 }
 
 // RegisterBean register object
-func (th *Nest) RegisterBean(beans ...*defines.Bean) error {
+func (th *Banana) RegisterBean(beans ...*defines.Bean) error {
 
 	if th.named == nil {
 		th.named = make(map[string]*defines.Bean)
@@ -111,7 +111,7 @@ func (th *Nest) RegisterBean(beans ...*defines.Bean) error {
 	return nil
 }
 
-func (th *Nest) Run(addr string) error {
+func (th *Banana) Run(addr string) error {
 	err := th.inject()
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (th *Nest) Run(addr string) error {
 
 }
 
-func (th *Nest) inject() error {
+func (th *Banana) inject() error {
 
 	for _, bean := range th.beans {
 		err := th.InjectOne(bean)
@@ -144,7 +144,7 @@ func (th *Nest) inject() error {
 	return nil
 }
 
-func (th *Nest) callHook() error {
+func (th *Banana) callHook() error {
 
 	for _, b := range th.beans {
 		if setup, ok := b.Value.(defines.BeanLoaded); ok {
@@ -155,7 +155,7 @@ func (th *Nest) callHook() error {
 	return nil
 }
 
-func (th *Nest) handleMapping() error {
+func (th *Banana) handleMapping() error {
 	for _, controller := range th.controllers {
 		for i := 0; i < controller.ReflectType.NumMethod(); i++ {
 			if isMappingMethod(controller.ReflectType.Method(i)) {
@@ -171,7 +171,7 @@ func (th *Nest) handleMapping() error {
 	return nil
 }
 
-func (th *Nest) InjectOne(b *defines.Bean) error {
+func (th *Banana) InjectOne(b *defines.Bean) error {
 	for i := 0; i < b.ReflectValue.Elem().NumField(); i++ {
 		field := b.ReflectValue.Elem().Field(i)
 		fieldType := field.Type()

@@ -40,21 +40,6 @@ func bindTranslators(validate *validator.Validate) *ut.UniversalTranslator {
 		enTranslator = trans
 	}
 
-	// 使用自定义标签做校验参数名字
-	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
-		param := fld.Tag.Get("param")
-
-		if param == "" {
-			param = fld.Tag.Get("json")
-
-			if param == "" {
-				param = fld.Name
-			}
-		}
-
-		return param
-	})
-
 	err := zhtranslations.RegisterDefaultTranslations(validate, zhTranslator)
 
 	if err != nil {
@@ -89,14 +74,45 @@ func (th *Validator) FindTranslator(lan string) (t ut.Translator, found bool) {
 
 }
 
-func NewValidator() *Validator {
+type Enum interface {
+	IsValid() bool
+}
+
+func ValidateEnum(fl validator.FieldLevel) bool {
+	value := fl.Field().Interface().(Enum)
+	return value.IsValid()
+}
+
+func NewValidator() (*Validator, error) {
 	validate := validator.New()
+
+	// register enum
+	err := validate.RegisterValidation("enum", ValidateEnum)
+	if err != nil {
+		return nil, err
+	}
+
+	// register tag
+	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		param := fld.Tag.Get("param")
+
+		if param == "" {
+			param = fld.Tag.Get("json")
+
+			if param == "" {
+				param = fld.Name
+			}
+		}
+
+		return param
+	})
+
 	ut := bindTranslators(validate)
-	return &Validator{validate: validate, ut: ut}
+	return &Validator{validate: validate, ut: ut}, nil
 }
 
 // ValidateStruct receives any kind of type, but only performed struct or pointer to struct type.
-func (th *Validator) ValidateStruct(obj interface{}) error {
+func (th *Validator) ValidateStruct(obj any) error {
 	value := reflect.ValueOf(obj)
 	valueType := value.Kind()
 	if valueType == reflect.Ptr {
