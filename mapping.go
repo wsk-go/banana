@@ -1,4 +1,4 @@
-package go_nest
+package banana
 
 import (
 	"github.com/gofiber/fiber/v2"

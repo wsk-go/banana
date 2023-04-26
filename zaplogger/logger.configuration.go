@@ -1,4 +1,4 @@
-package zap
+package zaplogger
 
 import (
 	"github.com/JackWSK/banana/defines"

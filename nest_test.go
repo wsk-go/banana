@@ -1,9 +1,9 @@
-package go_nest
+package banana
 
 import (
 	"fmt"
 	"github.com/JackWSK/banana/defines"
-	"github.com/JackWSK/banana/zap"
+	"github.com/JackWSK/banana/zaplogger"
 	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -16,7 +16,7 @@ import (
 )
 
 type UserController struct {
-	Logger *zap.Logger `inject:""`
+	Logger *zaplogger.Logger `inject:""`
 }
 
 func (th *UserController) HelloWorld() Mapping {
@@ -85,11 +85,11 @@ func TestRegister(t *testing.T) {
 
 	testBean := &TestBean{}
 
-	err := application.Import(zap.Configuration(zap.LoggerConfig{
+	err := application.Import(zaplogger.Configuration(zaplogger.LoggerConfig{
 		Level:  zapcore.DebugLevel,
-		Writer: zap.NewFileWriter("logger.default"),
+		Writer: zaplogger.NewFileWriter("logger.default"),
 		LevelWriter: map[zapcore.Level]io.Writer{
-			zapcore.InfoLevel: zap.NewFileWriter("logger.info"),
+			zapcore.InfoLevel: zaplogger.NewFileWriter("logger.info"),
 		},
 	}))
 
