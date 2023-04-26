@@ -1,4 +1,4 @@
-package nest
+package go_nest
 
 import (
 	"github.com/gofiber/fiber/v2"

@@ -1,6 +1,6 @@
-package nest
+package defines
 
-type Module struct {
+type Configuration struct {
 	Controllers []*Bean
 	Beans       []*Bean
 }

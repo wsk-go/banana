@@ -17,12 +17,12 @@
 //
 //	`inject:""`
 //	`inject:"private"`
-//	`inject:"dev nestzap"`
+//	`inject:"dev zap"`
 //
 // The first no value syntax is for the common case of a singleton dependency
 // of the associated type. The second triggers creation of a private instance
 // for the associated type. Finally the last form is asking for a named
-// dependency called "dev nestzap".
+// dependency called "dev zap".
 package inject
 
 import (

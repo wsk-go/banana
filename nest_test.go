@@ -2,8 +2,8 @@ package go_nest
 
 import (
 	"fmt"
-	"github.com/JackWSK/go-nest/nest"
-	"github.com/JackWSK/go-nest/nestzap"
+	"github.com/JackWSK/go-nest/defines"
+	"github.com/JackWSK/go-nest/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -16,11 +16,11 @@ import (
 )
 
 type UserController struct {
-	Logger *nestzap.Logger `inject:""`
+	Logger *zap.Logger `inject:""`
 }
 
-func (th *UserController) HelloWorld() nest.Mapping {
-	return nest.GetMapping{
+func (th *UserController) HelloWorld() Mapping {
+	return GetMapping{
 		Path: "/hello",
 		Handler: func(ctx *fiber.Ctx) error {
 			th.Logger.Info("hello world", zap.Any("aaa", "bbb"))
@@ -30,8 +30,8 @@ func (th *UserController) HelloWorld() nest.Mapping {
 	}
 }
 
-func (th *UserController) HelloWorld2() nest.Mapping {
-	return nest.GetMapping{
+func (th *UserController) HelloWorld2() Mapping {
+	return GetMapping{
 		Path: "/hello2",
 		Handler: func(ctx *fiber.Ctx) error {
 			return ctx.JSON(fiber.Map{"msg": "success"})
@@ -79,17 +79,17 @@ func TestRegister(t *testing.T) {
 
 		return ctx.Next()
 	})
-	var application = nest.New(nest.Config{
+	var application = New(Config{
 		Engine: engine,
 	})
 
 	testBean := &TestBean{}
 
-	err := application.Import(nestzap.Module(nestzap.LoggerConfig{
+	err := application.Import(zap.Configuration(zap.LoggerConfig{
 		Level:  zapcore.DebugLevel,
-		Writer: nestzap.NewFileWriter("logger.default"),
+		Writer: zap.NewFileWriter("logger.default"),
 		LevelWriter: map[zapcore.Level]io.Writer{
-			zapcore.InfoLevel: nestzap.NewFileWriter("logger.info"),
+			zapcore.InfoLevel: zap.NewFileWriter("logger.info"),
 		},
 	}))
 
@@ -97,11 +97,11 @@ func TestRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = application.RegisterBean(&nest.Bean{
+	err = application.RegisterBean(&defines.Bean{
 		Value: testBean,
-	}, &nest.Bean{
+	}, &defines.Bean{
 		Value: &User{Name: "user"},
-	}, &nest.Bean{
+	}, &defines.Bean{
 		Value: &User{Name: "user2"},
 		Name:  "user2",
 	})
@@ -110,7 +110,7 @@ func TestRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = application.RegisterController(&nest.Bean{
+	err = application.RegisterController(&defines.Bean{
 		Value: &UserController{},
 	})
 
@@ -130,7 +130,7 @@ func TestReflect(t *testing.T) {
 	m := u.Method(0)
 
 	tt := m.Type.Out(0)
-	fmt.Println(reflect.TypeOf((*nest.Mapping)(nil)).Elem().AssignableTo(tt))
+	fmt.Println(reflect.TypeOf((*Mapping)(nil)).Elem().AssignableTo(tt))
 }
 
 func TestReflect2(t *testing.T) {

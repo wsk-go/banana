@@ -1,4 +1,4 @@
-package nest
+package defines
 
 type BeanLoaded interface {
 	Loaded()

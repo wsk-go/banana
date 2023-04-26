@@ -1,28 +1,15 @@
-package nest
+package go_nest
 
 import (
 	"errors"
 	"fmt"
+	"github.com/JackWSK/go-nest/defines"
 	"github.com/gofiber/fiber/v2"
 	"reflect"
 )
 
 func DefaultApp() *fiber.App {
 	return fiber.New()
-}
-
-type Bean struct {
-	// the object you try to register
-	Value any
-
-	// the name you register in nest
-	Name string
-
-	// type
-	reflectType reflect.Type
-
-	// value
-	reflectValue reflect.Value
 }
 
 type MethodMapping struct {
@@ -34,10 +21,10 @@ type Config struct {
 }
 
 type Nest struct {
-	beans       []*Bean
-	controllers []*Bean
-	named       map[string]*Bean
-	typed       map[reflect.Type]*Bean
+	beans       []*defines.Bean
+	controllers []*defines.Bean
+	named       map[string]*defines.Bean
+	typed       map[reflect.Type]*defines.Bean
 
 	engine *fiber.App
 }
@@ -55,8 +42,8 @@ func (th *Nest) Engine() *fiber.App {
 	return th.engine
 }
 
-// Import Module
-func (th *Nest) Import(modules ...*Module) error {
+// Import Configuration
+func (th *Nest) Import(modules ...*defines.Configuration) error {
 	for _, module := range modules {
 		if len(module.Beans) > 0 {
 			err := th.RegisterBean(module.Beans...)
@@ -76,7 +63,7 @@ func (th *Nest) Import(modules ...*Module) error {
 	return nil
 }
 
-func (th *Nest) RegisterController(beans ...*Bean) error {
+func (th *Nest) RegisterController(beans ...*defines.Bean) error {
 	err := th.RegisterBean(beans...)
 	if err != nil {
 		return err
@@ -86,14 +73,14 @@ func (th *Nest) RegisterController(beans ...*Bean) error {
 }
 
 // RegisterBean register object
-func (th *Nest) RegisterBean(beans ...*Bean) error {
+func (th *Nest) RegisterBean(beans ...*defines.Bean) error {
 
 	if th.named == nil {
-		th.named = make(map[string]*Bean)
+		th.named = make(map[string]*defines.Bean)
 	}
 
 	if th.typed == nil {
-		th.typed = make(map[reflect.Type]*Bean)
+		th.typed = make(map[reflect.Type]*defines.Bean)
 	}
 
 	for _, bean := range beans {
@@ -116,8 +103,8 @@ func (th *Nest) RegisterBean(beans ...*Bean) error {
 			th.named[bean.Name] = bean
 		}
 
-		bean.reflectValue = reflectValue
-		bean.reflectType = reflectType
+		bean.ReflectValue = reflectValue
+		bean.ReflectType = reflectType
 		th.beans = append(th.beans, bean)
 	}
 
@@ -159,8 +146,8 @@ func (th *Nest) inject() error {
 
 func (th *Nest) callHook() error {
 
-	for _, bean := range th.beans {
-		if setup, ok := bean.Value.(BeanLoaded); ok {
+	for _, b := range th.beans {
+		if setup, ok := b.Value.(defines.BeanLoaded); ok {
 			setup.Loaded()
 		}
 	}
@@ -170,9 +157,9 @@ func (th *Nest) callHook() error {
 
 func (th *Nest) handleMapping() error {
 	for _, controller := range th.controllers {
-		for i := 0; i < controller.reflectType.NumMethod(); i++ {
-			if isMappingMethod(controller.reflectType.Method(i)) {
-				method := controller.reflectValue.Method(i)
+		for i := 0; i < controller.ReflectType.NumMethod(); i++ {
+			if isMappingMethod(controller.ReflectType.Method(i)) {
+				method := controller.ReflectValue.Method(i)
 				value := method.Call(nil)[0]
 				if mapping, ok := value.Interface().(Mapping); ok {
 					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), mapping.GetHandler())
@@ -184,20 +171,20 @@ func (th *Nest) handleMapping() error {
 	return nil
 }
 
-func (th *Nest) InjectOne(bean *Bean) error {
-	for i := 0; i < bean.reflectValue.Elem().NumField(); i++ {
-		field := bean.reflectValue.Elem().Field(i)
+func (th *Nest) InjectOne(b *defines.Bean) error {
+	for i := 0; i < b.ReflectValue.Elem().NumField(); i++ {
+		field := b.ReflectValue.Elem().Field(i)
 		fieldType := field.Type()
-		fieldTag := bean.reflectType.Elem().Field(i).Tag
-		//fieldName := bean.reflectType.Elem().Field(i).Name
+		fieldTag := b.ReflectType.Elem().Field(i).Tag
+		//fieldName := bean.ReflectType.Elem().Field(i).Name
 		tag, err := parseTag(fieldTag)
 
 		if err != nil {
 			return fmt.Errorf(
 				"unexpected tag format `%s` for field %s in type %s",
 				string(fieldTag),
-				bean.reflectType.Elem().Field(i).Name,
-				bean.reflectType,
+				b.ReflectType.Elem().Field(i).Name,
+				b.ReflectType,
 			)
 		}
 
@@ -210,20 +197,20 @@ func (th *Nest) InjectOne(bean *Bean) error {
 		if !field.CanSet() {
 			return fmt.Errorf(
 				"inject requested on unexported field %s in type %s",
-				bean.reflectType.Elem().Field(i).Name,
-				bean.reflectType,
+				b.ReflectType.Elem().Field(i).Name,
+				b.ReflectType,
 			)
 		}
 
-		var injectBean *Bean
+		var injectBean *defines.Bean
 		if tag.Name == "" {
 			if ib, ok := th.typed[fieldType]; ok {
 				injectBean = ib
 			} else {
 				return fmt.Errorf(
 					"inject bean not found for field %s in type %s",
-					bean.reflectType.Elem().Field(i).Name,
-					bean.reflectType,
+					b.ReflectType.Elem().Field(i).Name,
+					b.ReflectType,
 				)
 			}
 		} else {
@@ -232,13 +219,13 @@ func (th *Nest) InjectOne(bean *Bean) error {
 			} else {
 				return fmt.Errorf(
 					"inject bean not found for field %s in name %s",
-					bean.reflectType.Elem().Field(i).Name,
-					bean.reflectType,
+					b.ReflectType.Elem().Field(i).Name,
+					b.ReflectType,
 				)
 			}
 		}
 
-		field.Set(injectBean.reflectValue)
+		field.Set(injectBean.ReflectValue)
 	}
 
 	return nil

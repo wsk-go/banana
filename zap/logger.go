@@ -1,4 +1,4 @@
-package nestzap
+package zap
 
 import (
 	"go.uber.org/zap"
@@ -88,7 +88,7 @@ func NewZapLogger(level zapcore.Level, writer io.Writer) *zap.Logger {
 	encoderConfig := zapcore.EncoderConfig{
 		TimeKey:        "time",
 		LevelKey:       "Level",
-		NameKey:        "nestzap",
+		NameKey:        "zap",
 		CallerKey:      "linenum",
 		MessageKey:     "msg",
 		StacktraceKey:  "stacktrace",
