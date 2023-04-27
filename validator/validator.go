@@ -9,19 +9,23 @@ import (
 	entranslations "github.com/go-playground/validator/v10/translations/en"
 	zhtranslations "github.com/go-playground/validator/v10/translations/zh"
 	"reflect"
-	"strings"
 )
 
-type Local string
+var translationMapping = map[Language]func(v *validator.Validate, trans ut.Translator) error{
+	LanguageZH: zhtranslations.RegisterDefaultTranslations,
+	LanguageEN: entranslations.RegisterDefaultTranslations,
+}
+
+type Language string
 
 const (
-	// 中国简体
-	LocalZH = "zh"
-	// 英文
-	LocalEN = "en"
+	// LanguageZH chinese
+	LanguageZH Language = "zh"
+	// LanguageEN english
+	LanguageEN Language = "en"
 )
 
-func bindTranslators(validate *validator.Validate) *ut.UniversalTranslator {
+func bindTranslators(validate *validator.Validate, languages ...Language) *ut.UniversalTranslator {
 	var uni *ut.UniversalTranslator
 	var zhTranslator ut.Translator
 	var enTranslator ut.Translator
@@ -62,16 +66,6 @@ type StructValidator interface {
 type Validator struct {
 	validate *validator.Validate
 	ut       *ut.UniversalTranslator
-}
-
-func (th *Validator) FindTranslator(lan string) (t ut.Translator, found bool) {
-	s := strings.Split(lan, "-")
-	if len(s) > 0 {
-		return th.ut.FindTranslator(s[0])
-	} else {
-		return th.ut.FindTranslator("zh")
-	}
-
 }
 
 type Enum interface {
@@ -120,16 +114,16 @@ func (th *Validator) ValidateStruct(obj any) error {
 	}
 	if valueType == reflect.Struct {
 		if err := th.validate.Struct(obj); err != nil {
-			return errors.WithStack(err)
+			ve := err.(validator.ValidationErrors)
+			for _, vee := range ve {
+				trans, found := th.ut.GetTranslator("zh")
+				if !found {
+					trans = th.ut.GetFallback()
+				}
+				message := vee.Translate(trans)
+				return errors.NewValidationError(message)
+			}
 		}
 	}
 	return nil
-}
-
-// Engine returns the underlying validator engine which powers the default
-// Validator instance. This is useful if you want to register custom validations
-// or struct level validations. See validator GoDoc for more info -
-// https://godoc.org/gopkg.in/go-playground/validator.v8
-func (th *Validator) Engine() interface{} {
-	return th.validate
 }

@@ -45,6 +45,7 @@ func (th *Banana) Engine() *fiber.App {
 // Import Configuration
 func (th *Banana) Import(modules ...*defines.Configuration) error {
 	for _, module := range modules {
+
 		if len(module.Beans) > 0 {
 			err := th.RegisterBean(module.Beans...)
 			if err != nil {

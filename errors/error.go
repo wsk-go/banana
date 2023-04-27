@@ -97,6 +97,38 @@ import (
 	"io"
 )
 
+type ValidationError struct {
+	msg string
+	*stack
+}
+
+func NewValidationError(msg string) *ValidationError {
+	return &ValidationError{
+		msg:   msg,
+		stack: callers(),
+	}
+}
+
+func (v *ValidationError) Format(s fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		if s.Flag('+') {
+			io.WriteString(s, v.msg)
+			v.stack.Format(s, verb)
+			return
+		}
+		fallthrough
+	case 's':
+		io.WriteString(s, v.msg)
+	case 'q':
+		fmt.Fprintf(s, "%q", v.msg)
+	}
+}
+
+func (v *ValidationError) Error() string {
+	return v.msg
+}
+
 type LogicError struct {
 	msg  string
 	code int
