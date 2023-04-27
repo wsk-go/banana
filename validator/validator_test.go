@@ -26,7 +26,7 @@ const (
 
 type User struct {
 	Name   string     `validate:"required" json:"name"`
-	Gender UserGender `validate:"enum"`
+	Gender UserGender `validate:"enum" json:"gender"`
 }
 
 func TestValidator(t *testing.T) {

@@ -3,8 +3,10 @@ package validator
 import (
 	"github.com/JackWSK/banana/errors"
 	"github.com/go-playground/locales"
+	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	entranslations "github.com/go-playground/validator/v10/translations/en"
 	"reflect"
 )
 
@@ -59,7 +61,7 @@ import (
 //}
 
 var enumTranslationText = map[string]string{
-	"en": "{0} is invalid",
+	"en": "{0} is invalid！",
 	"zh": "{0} 不合法!",
 }
 
@@ -105,7 +107,9 @@ func NewValidator() (*Validator, error) {
 		return param
 	})
 
-	return &Validator{validate: validate}, nil
+	v := &Validator{validate: validate}
+	err = v.AddTranslation(en.New(), entranslations.RegisterDefaultTranslations)
+	return v, err
 }
 
 // ValidateStruct receives any kind of type, but only performed struct or pointer to struct type.
@@ -163,7 +167,6 @@ func (th *Validator) AddTranslation(translator locales.Translator, register func
 			return ut.Add("enum", text, true) // see universal-translator for details
 		}, func(ut ut.Translator, fe validator.FieldError) string {
 			t, _ := ut.T("enum", fe.Field())
-
 			return t
 		})
 
