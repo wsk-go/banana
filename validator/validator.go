@@ -10,56 +10,6 @@ import (
 	"reflect"
 )
 
-//func addTranslation(translator locales.Translator,
-//	uTranslator *ut.UniversalTranslator,
-//	register func(trans ut.Translator) error) error {
-//	err := uTranslator.AddTranslator(translator, true)
-//	if err != nil {
-//		return err
-//	}
-//	if trans, ok := uTranslator.GetTranslator(translator.Locale()); ok {
-//		return register(trans)
-//	}
-//	return nil
-//}
-//
-//type Language string
-//
-//func bindTranslators(validate *validator.Validate, defaultLanguage Language, languages ...Language) *ut.UniversalTranslator {
-//	var uni *ut.UniversalTranslator
-//
-//	var zhTranslator ut.Translator
-//	var enTranslator ut.Translator
-//
-//	zhTrans := zh.New()
-//	enTrans := en.New()
-//
-//	// 第一个参数是默认翻译
-//	uni = ut.New(zhTrans, zhTrans, enTrans)
-//
-//	if trans, ok := uni.GetTranslator("zh"); ok {
-//		zhTranslator = trans
-//	}
-//
-//	if trans, ok := uni.GetTranslator("en"); ok {
-//		enTranslator = trans
-//	}
-//
-//	err := zhtranslations.RegisterDefaultTranslations(validate, zhTranslator)
-//
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	err = entranslations.RegisterDefaultTranslations(validate, enTranslator)
-//
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	return uni
-//}
-
 var enumTranslationText = map[string]string{
 	"en": "{0} is invalid！",
 	"zh": "{0} 不合法!",
