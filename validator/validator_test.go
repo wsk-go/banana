@@ -2,6 +2,10 @@ package validator
 
 import (
 	"fmt"
+	"github.com/go-playground/locales/en"
+	"github.com/go-playground/locales/zh"
+	entranslations "github.com/go-playground/validator/v10/translations/en"
+	zhtranslations "github.com/go-playground/validator/v10/translations/zh"
 	"testing"
 )
 
@@ -31,10 +35,20 @@ func TestValidator(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	err = validator.AddTranslation(zh.New(), zhtranslations.RegisterDefaultTranslations)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = validator.AddTranslation(en.New(), entranslations.RegisterDefaultTranslations)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	var user = User{
 		Name: "jack",
 	}
 
-	err = validator.ValidateStruct(user)
+	err = validator.ValidateStruct(user, "en")
 	fmt.Printf("%+v", err)
 }
