@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	_recover "github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/swagger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io"
@@ -52,6 +53,16 @@ func (t *TestBean) Loaded() {
 	fmt.Println("loaded")
 }
 
+// @title Fiber Example API
+// @version 1.0
+// @description This is a sample swagger for Fiber
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.email fiber@swagger.io
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:8080
+// @BasePath /
 func TestRegister(t *testing.T) {
 	engine := fiber.New(fiber.Config{
 
@@ -79,6 +90,19 @@ func TestRegister(t *testing.T) {
 
 		return ctx.Next()
 	})
+
+	engine.Get("/swagger/*", swagger.HandlerDefault)
+	engine.Get("/swagger/*", swagger.New(swagger.Config{ // custom
+		DeepLinking: false,
+		// Expand ("list") or Collapse ("none") tag groups by default
+		DocExpansion: "none",
+		// Prefill OAuth ClientId on Authorize popup
+		OAuth: &swagger.OAuthConfig{
+			AppName:  "Jack",
+			ClientId: "123456",
+		},
+	}))
+
 	var application = New(Config{
 		Engine: engine,
 	})
