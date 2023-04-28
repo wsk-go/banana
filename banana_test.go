@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/JackWSK/banana/defines"
 	"github.com/JackWSK/banana/zaplogger"
-	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	_recover "github.com/gofiber/fiber/v2/middleware/recover"
@@ -67,7 +66,7 @@ func TestRegister(t *testing.T) {
 	engine := fiber.New(fiber.Config{
 
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
-			return ctx.JSON(gin.H{
+			return ctx.JSON(fiber.Map{
 				"success": false,
 				"code":    0,
 				"message": err.Error(),
