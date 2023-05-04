@@ -30,6 +30,7 @@ func TestMapStream(t *testing.T) {
 	).Filter(func(i int) bool {
 		return i > 1
 	}).ToList()
+
 	fmt.Println(aa)
 }
 

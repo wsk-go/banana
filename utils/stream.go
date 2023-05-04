@@ -65,14 +65,6 @@ func Stream[T any](elements []T) *SliceStream[T] {
 	}
 }
 
-//type Collector[IN any, OUT any] struct {
-//	stages []func(in IN) OUT
-//}
-//
-//func (th *Collector[IN, OUT]) Map() *Collector[IN, OUT] {
-//	th.stages = append(th.stages)
-//}
-
 func (th *SliceStream[T]) ToList() []T {
 	var out []T
 
@@ -128,24 +120,6 @@ func ToMapV[IN any, KEY comparable, VALUE any](s *SliceStream[IN], keyMapper fun
 
 	return m
 }
-
-//func ToMap[IN any, KEY comparable](in []IN, keyMapper func(IN) KEY) map[KEY]IN {
-//	return ToMapV(in, keyMapper, func(in IN) IN {
-//		return in
-//	})
-//}
-
-//func ToMapV[IN any, KEY comparable, VALUE any](in []IN, keyMapper func(IN) KEY, valueMapper func(IN) VALUE) map[KEY]VALUE {
-//	m := make(map[KEY]VALUE)
-//
-//	for _, v := range in {
-//		key := keyMapper(v)
-//		value := valueMapper(v)
-//		m[key] = value
-//	}
-//
-//	return m
-//}
 
 func Group[IN any, KEY comparable](s *SliceStream[IN], keyMapper func(IN) KEY) map[KEY][]IN {
 	return GroupV(s, keyMapper, func(in IN) IN {
