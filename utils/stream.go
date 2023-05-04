@@ -1,22 +1,22 @@
 package utils
 
-type sink[T any] struct {
-	next   *sink[T]
-	accept func(e T, next *sink[T])
+type pipeline[T any] struct {
+	next   *pipeline[T]
+	accept func(e T, next *pipeline[T])
 }
 
-func (th *sink[T]) Accept(e T) {
+func (th *pipeline[T]) Accept(e T) {
 	th.accept(e, th.next)
 }
 
 type SliceStream[T any] struct {
 	//elements []T
 	head func()
-	last *sink[T]
+	last *pipeline[T]
 }
 
 func (th *SliceStream[T]) Filter(filter func(T) bool) *SliceStream[T] {
-	th.addSink(func(e T, next *sink[T]) {
+	th.addPipeline(func(e T, next *pipeline[T]) {
 		if filter(e) {
 			next.Accept(e)
 		}
@@ -25,22 +25,22 @@ func (th *SliceStream[T]) Filter(filter func(T) bool) *SliceStream[T] {
 }
 
 func (th *SliceStream[T]) Map(mapper func(T) T) *SliceStream[T] {
-	th.addSink(func(e T, next *sink[T]) {
+	th.addPipeline(func(e T, next *pipeline[T]) {
 		next.Accept(mapper(e))
 	})
 	return th
 }
 
 func (th *SliceStream[T]) accept(accept func(T)) {
-	th.addSink(func(e T, next *sink[T]) {
+	th.addPipeline(func(e T, next *pipeline[T]) {
 		accept(e)
 	})
 
 	th.head()
 }
 
-func (th *SliceStream[T]) addSink(accept func(e T, next *sink[T])) {
-	s := &sink[T]{
+func (th *SliceStream[T]) addPipeline(accept func(e T, next *pipeline[T])) {
+	s := &pipeline[T]{
 		accept: accept,
 	}
 	th.last.next = s
@@ -48,8 +48,8 @@ func (th *SliceStream[T]) addSink(accept func(e T, next *sink[T])) {
 }
 
 func Stream[T any](elements []T) *SliceStream[T] {
-	sin := &sink[T]{
-		accept: func(e T, next *sink[T]) {
+	p := &pipeline[T]{
+		accept: func(e T, next *pipeline[T]) {
 			if next != nil {
 				next.Accept(e)
 			}
@@ -58,10 +58,10 @@ func Stream[T any](elements []T) *SliceStream[T] {
 	return &SliceStream[T]{
 		head: func() {
 			for _, element := range elements {
-				sin.Accept(element)
+				p.Accept(element)
 			}
 		},
-		last: sin,
+		last: p,
 	}
 }
 
@@ -77,8 +77,8 @@ func (th *SliceStream[T]) ToList() []T {
 
 func MapStream[IN any, OUT any](s *SliceStream[IN], mapper func(IN) OUT) *SliceStream[OUT] {
 
-	last := &sink[OUT]{
-		accept: func(e OUT, next *sink[OUT]) {
+	last := &pipeline[OUT]{
+		accept: func(e OUT, next *pipeline[OUT]) {
 			if next != nil {
 				next.Accept(e)
 			}

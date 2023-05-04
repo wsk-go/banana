@@ -5,6 +5,14 @@ import (
 	"testing"
 )
 
+func TestStream1(t *testing.T) {
+	aaa := []string{"123", "456"}
+	Stream(aaa).
+		Filter(func(s string) bool {
+			return true
+		}).ToList()
+}
+
 func TestStream(t *testing.T) {
 	aaa := []string{"123", "456"}
 	aa := Map(Stream(aaa).
