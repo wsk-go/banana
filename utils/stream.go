@@ -10,9 +10,9 @@ func (th *sink[T]) Accept(e T) {
 }
 
 type SliceStream[T any] struct {
-	elements []T
-	head     *sink[T]
-	last     *sink[T]
+	//elements []T
+	head func()
+	last *sink[T]
 }
 
 func (th *SliceStream[T]) Filter(filter func(T) bool) *SliceStream[T] {
@@ -36,36 +36,32 @@ func (th *SliceStream[T]) accept(accept func(T)) {
 		accept(e)
 	})
 
-	for _, element := range th.elements {
-		th.head.Accept(element)
-	}
+	th.head()
 }
 
 func (th *SliceStream[T]) addSink(accept func(e T, next *sink[T])) {
 	s := &sink[T]{
 		accept: accept,
 	}
-	if th.head == nil && th.last == nil {
-		th.head = s
-		th.last = s
-	} else {
-		th.last.next = s
-		th.last = s
-	}
+	th.last.next = s
+	th.last = s
 }
 
-func Of[T any](elements []T) *SliceStream[T] {
-	//s := &sink[T]{
-	//	accept: func(e T, next *sink[T]) {
-	//		if next != nil {
-	//			next.Accept(e)
-	//		}
-	//	},
-	//}
+func Stream[T any](elements []T) *SliceStream[T] {
+	sin := &sink[T]{
+		accept: func(e T, next *sink[T]) {
+			if next != nil {
+				next.Accept(e)
+			}
+		},
+	}
 	return &SliceStream[T]{
-		elements: elements,
-		//head:     s,
-		//last:     s,
+		head: func() {
+			for _, element := range elements {
+				sin.Accept(element)
+			}
+		},
+		last: sin,
 	}
 }
 
@@ -76,6 +72,36 @@ func Of[T any](elements []T) *SliceStream[T] {
 //func (th *Collector[IN, OUT]) Map() *Collector[IN, OUT] {
 //	th.stages = append(th.stages)
 //}
+
+func (th *SliceStream[T]) ToList() []T {
+	var out []T
+
+	th.accept(func(in T) {
+		out = append(out, in)
+	})
+
+	return out
+}
+
+func MapStream[IN any, OUT any](s *SliceStream[IN], mapper func(IN) OUT) *SliceStream[OUT] {
+
+	last := &sink[OUT]{
+		accept: func(e OUT, next *sink[OUT]) {
+			if next != nil {
+				next.Accept(e)
+			}
+		},
+	}
+
+	return &SliceStream[OUT]{
+		head: func() {
+			s.accept(func(in IN) {
+				last.Accept(mapper(in))
+			})
+		},
+		last: last,
+	}
+}
 
 func Map[IN any, OUT any](s *SliceStream[IN], mapper func(IN) OUT) []OUT {
 	var out []OUT
