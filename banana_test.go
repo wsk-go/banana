@@ -15,6 +15,26 @@ import (
 	"testing"
 )
 
+type User2 struct {
+	Name string
+}
+type UserRegister struct {
+	Logger *zaplogger.Logger `inject:""`
+}
+
+func (u *UserRegister) Configuration() defines.ModuleFunc {
+	return func(application defines.Application) (*defines.Configuration, error) {
+		return &defines.Configuration{
+			Controllers: nil,
+			Beans: []*defines.Bean{
+				{
+					Value: &User2{Name: "aaa"},
+				},
+			},
+		}, nil
+	}
+}
+
 type UserController struct {
 	Logger *zaplogger.Logger `inject:""`
 }
@@ -126,7 +146,7 @@ func TestRegister(t *testing.T) {
 	}, &defines.Bean{
 		Value: &User{Name: "user2"},
 		Name:  "user2",
-	})
+	}, &defines.Bean{Value: &UserRegister{}})
 
 	if err != nil {
 		t.Fatal(err)

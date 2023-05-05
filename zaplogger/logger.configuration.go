@@ -6,7 +6,7 @@ import (
 
 func Configuration(config LoggerConfig) defines.ModuleFunc {
 
-	return func() (*defines.Configuration, error) {
+	return func(application defines.Application) (*defines.Configuration, error) {
 		return &defines.Configuration{
 			Beans: []*defines.Bean{
 				{
