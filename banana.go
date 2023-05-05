@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/JackWSK/banana/defines"
+	"github.com/JackWSK/banana/utils"
 	"github.com/gofiber/fiber/v2"
 	"reflect"
 )
@@ -133,12 +134,8 @@ func (th *Banana) RegisterBean(beans ...*defines.Bean) error {
 }
 
 func (th *Banana) Run(addr string) error {
-	err := th.inject()
-	if err != nil {
-		return err
-	}
+	err := th.prepareBeans()
 
-	err = th.callHook()
 	if err != nil {
 		return err
 	}
@@ -150,26 +147,60 @@ func (th *Banana) Run(addr string) error {
 	}
 
 	return th.engine.Listen(addr)
-
 }
 
-func (th *Banana) inject() error {
+func (th *Banana) prepareBeans() error {
+	beans := utils.Stream(th.beans).Filter(func(bean *defines.Bean) bool {
+		return bean.Injected == false
+	}).ToList()
 
-	for _, bean := range th.beans {
+	err := th.inject(beans)
+	if err != nil {
+		return err
+	}
+
+	err = th.callHook(beans)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (th *Banana) inject(beans []*defines.Bean) error {
+
+	for _, bean := range beans {
 		err := th.InjectOne(bean)
 		if err != nil {
 			return err
 		}
+		bean.Injected = true
 	}
 
 	return nil
 }
 
-func (th *Banana) callHook() error {
+func (th *Banana) callHook(beans []*defines.Bean) error {
 
-	for _, b := range th.beans {
+	var configurations []defines.ModuleFunc
+	for _, b := range beans {
 		if setup, ok := b.Value.(defines.BeanLoaded); ok {
 			setup.Loaded()
+		}
+
+		// continue configuration
+		if beanConfiguration, ok := b.Value.(defines.BeanConfiguration); ok {
+			configurations = append(configurations, beanConfiguration.Configuration())
+		}
+	}
+
+	if len(configurations) > 0 {
+		err := th.Import(configurations...)
+		if err != nil {
+			return err
+		}
+		err = th.prepareBeans()
+		if err != nil {
+			return err
 		}
 	}
 

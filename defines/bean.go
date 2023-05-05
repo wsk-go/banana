@@ -14,4 +14,7 @@ type Bean struct {
 
 	// value
 	ReflectValue reflect.Value
+
+	// has injected
+	Injected bool
 }
