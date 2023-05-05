@@ -42,19 +42,39 @@ func (th *Banana) Engine() *fiber.App {
 	return th.engine
 }
 
-// Import Configuration
-func (th *Banana) Import(modules ...*defines.Configuration) error {
+func (th *Banana) GetBeanByType(t reflect.Type) any {
+	if bean, ok := th.typed[t]; ok {
+		return bean.Value
+	}
+
+	return nil
+}
+
+func (th *Banana) GetBeanByName(name string) any {
+	if bean, ok := th.named[name]; ok {
+		return bean.Value
+	}
+
+	return nil
+}
+
+func (th *Banana) Import(modules ...defines.ModuleFunc) error {
 	for _, module := range modules {
 
-		if len(module.Beans) > 0 {
-			err := th.RegisterBean(module.Beans...)
+		configuration, err := module(th)
+		if err != nil {
+			return err
+		}
+
+		if len(configuration.Beans) > 0 {
+			err := th.RegisterBean(configuration.Beans...)
 			if err != nil {
 				return err
 			}
 		}
 
-		if len(module.Controllers) > 0 {
-			err := th.RegisterController(module.Controllers...)
+		if len(configuration.Controllers) > 0 {
+			err := th.RegisterController(configuration.Controllers...)
 			if err != nil {
 				return err
 			}

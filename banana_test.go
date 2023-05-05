@@ -64,7 +64,6 @@ func (t *TestBean) Loaded() {
 // @BasePath /
 func TestRegister(t *testing.T) {
 	engine := fiber.New(fiber.Config{
-
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
 			return ctx.JSON(fiber.Map{
 				"success": false,
