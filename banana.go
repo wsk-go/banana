@@ -43,8 +43,9 @@ func (th *Banana) Engine() *fiber.App {
 	return th.engine
 }
 
-func GetBeanByType[T any](banana *Banana, value T) T {
-	return banana.GetBeanByType(reflect.TypeOf(value)).(T)
+func GetBeanByType[T any](banana *Banana) T {
+	var t T
+	return banana.GetBeanByType(reflect.TypeOf(t)).(T)
 }
 
 func (th *Banana) GetBeanByType(t reflect.Type) any {
