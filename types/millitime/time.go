@@ -51,6 +51,10 @@ func NewFromTimePtr(time *time.Time) *MilliTime {
 	return (*MilliTime)(time)
 }
 
+func NewFromTime(time time.Time) *MilliTime {
+	return (*MilliTime)(&time)
+}
+
 //func (th MilliTime) Add(t time.Duration) MilliTime {
 //	return MilliTime(time.Time(th).Add(t))
 //}
