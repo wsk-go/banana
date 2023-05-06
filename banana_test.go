@@ -172,6 +172,44 @@ func TestRegister(t *testing.T) {
 
 }
 
+func TestGetBean(t *testing.T) {
+	engine := fiber.New()
+	var application = New(Config{
+		Engine: engine,
+	})
+
+	err := application.Import(zaplogger.Configuration(zaplogger.LoggerConfig{
+		Level:  zapcore.DebugLevel,
+		Writer: zaplogger.NewFileWriter("logger.default"),
+		LevelWriter: map[zapcore.Level]io.Writer{
+			zapcore.InfoLevel: zaplogger.NewFileWriter("logger.info"),
+		},
+	}))
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = application.RegisterController(&defines.Bean{
+		Value: &UserController{},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	c, _ := GetBeanByType[*UserController](application)
+	fmt.Println(c)
+
+	cc := MustGetBeanByName[*User](application, "aaa")
+	fmt.Println(cc)
+	err = application.Run("0.0.0.0:9222")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+}
+
 func TestReflect(t *testing.T) {
 	u := reflect.TypeOf(&UserController{})
 	m := u.Method(0)

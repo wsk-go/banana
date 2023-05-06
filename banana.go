@@ -9,6 +9,10 @@ import (
 	"reflect"
 )
 
+const (
+	BeanNotFound = ""
+)
+
 func DefaultApp() *fiber.App {
 	return fiber.New()
 }
@@ -43,21 +47,12 @@ func (th *Banana) Engine() *fiber.App {
 	return th.engine
 }
 
-func GetBeanByType[T any](banana *Banana) T {
-	var t T
-	return banana.GetBeanByType(reflect.TypeOf(t)).(T)
-}
-
 func (th *Banana) GetBeanByType(t reflect.Type) any {
 	if bean, ok := th.typed[t]; ok {
 		return bean.Value
 	}
 
 	return nil
-}
-
-func GetBeanByName[T any](banana *Banana, name string) T {
-	return banana.GetBeanByName(name).(T)
 }
 
 func (th *Banana) GetBeanByName(name string) any {
@@ -290,4 +285,37 @@ func (th *Banana) InjectOne(b *defines.Bean) error {
 	}
 
 	return nil
+}
+
+func MustGetBeanByType[T any](application defines.Application) T {
+	if v, ok := GetBeanByType[T](application); ok {
+		return v
+	}
+	panic(errors.New(fmt.Sprintf("%T bean not found", *new(T))))
+}
+
+func GetBeanByType[T any](application defines.Application) (T, bool) {
+	var t T
+	if v := application.GetBeanByType(reflect.TypeOf(t)); v != nil {
+		return v.(T), true
+	}
+	return t, false
+}
+
+func MustGetBeanByName[T any](application defines.Application, name string) T {
+	if v, ok := GetBeanByName[T](application, name); ok {
+		return v
+	}
+
+	panic(errors.New(fmt.Sprintf("bean with name [%s] not found", name)))
+}
+
+func GetBeanByName[T any](application defines.Application, name string) (T, bool) {
+	var t T
+	if v := application.GetBeanByName(name); v != nil {
+		if v2, ok := v.(T); ok {
+			return v2, ok
+		}
+	}
+	return t, false
 }
