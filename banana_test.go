@@ -3,6 +3,7 @@ package banana
 import (
 	"fmt"
 	"github.com/JackWSK/banana/defines"
+	"github.com/JackWSK/banana/impl/fiberengine"
 	"github.com/JackWSK/banana/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -47,7 +48,7 @@ type UserController struct {
 func (th *UserController) HelloWorld() Mapping {
 	return GetMapping{
 		Path: "/hello",
-		Handler: func(ctx *fiber.Ctx) error {
+		Handler: func(ctx defines.Context) error {
 			th.Logger.Info("hello world", zap.Any("aaa", "bbb"))
 			th.Logger.Error("hello world", zap.Any("aaa", "bbb"))
 			return ctx.JSON(fiber.Map{"msg": "success"})
@@ -58,7 +59,7 @@ func (th *UserController) HelloWorld() Mapping {
 func (th *UserController) HelloWorld2() Mapping {
 	return GetMapping{
 		Path: "/hello2",
-		Handler: func(ctx *fiber.Ctx) error {
+		Handler: func(ctx defines.Context) error {
 			return ctx.JSON(fiber.Map{"msg": "success"})
 		},
 	}
@@ -88,7 +89,7 @@ func (t *TestBean) Loaded() {
 // @host localhost:8080
 // @BasePath /
 func TestRegister(t *testing.T) {
-	engine := fiber.New(fiber.Config{
+	engine := fiberengine.New(fiber.Config{
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
 			return ctx.JSON(fiber.Map{
 				"success": false,
@@ -98,9 +99,9 @@ func TestRegister(t *testing.T) {
 		},
 	})
 
-	engine.Use(cors.New())
-	engine.Use(_recover.New())
-	engine.Use(func(ctx *fiber.Ctx) (err error) {
+	engine.App().Use(cors.New())
+	engine.App().Use(_recover.New())
+	engine.App().Use(func(ctx *fiber.Ctx) (err error) {
 		defer func() {
 			if r := recover(); r != nil {
 				_ = ctx.JSON(fiber.Map{
@@ -114,8 +115,8 @@ func TestRegister(t *testing.T) {
 		return ctx.Next()
 	})
 
-	engine.Get("/swagger/*", swagger.HandlerDefault)
-	engine.Get("/swagger/*", swagger.New(swagger.Config{ // custom
+	engine.App().Get("/swagger/*", swagger.HandlerDefault)
+	engine.App().Get("/swagger/*", swagger.New(swagger.Config{ // custom
 		DeepLinking: false,
 		// Expand ("list") or Collapse ("none") tag groups by default
 		DocExpansion: "none",
@@ -173,7 +174,7 @@ func TestRegister(t *testing.T) {
 }
 
 func TestGetBean(t *testing.T) {
-	engine := fiber.New()
+	engine := fiberengine.New()
 	var application = New(Config{
 		Engine: engine,
 	})
