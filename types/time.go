@@ -43,6 +43,14 @@ func NewMilliTime() MilliTime {
 	return MilliTime(time.Now())
 }
 
+func MilliTimeFromTime(time time.Time) MilliTime {
+	return MilliTime(time)
+}
+
+func NewMilliTimeFromTimePtr(time *time.Time) *MilliTime {
+	return (*MilliTime)(time)
+}
+
 //func (th MilliTime) Add(t time.Duration) MilliTime {
 //	return MilliTime(time.Time(th).Add(t))
 //}

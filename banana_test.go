@@ -251,3 +251,28 @@ func TestReflect2(t *testing.T) {
 //		}
 //	}
 //}
+
+type GenericStruct[T any] struct {
+	Data T
+}
+
+func (g GenericStruct[T]) GetType() reflect.Type {
+	return reflect.TypeOf((*T)(nil)).Elem()
+}
+
+func TestReflect3(test *testing.T) {
+	t := reflect.ValueOf(GenericStruct[User]{})
+	tt := reflect.ValueOf(GenericStruct[User]{})
+	fmt.Println(t == tt)
+	fmt.Println(GenericStruct[User]{}.GetType().String())
+}
+
+type aa int64
+
+func TestPointer(test *testing.T) {
+	var total *int64 = nil
+	var hh = (*aa)(total)
+	fmt.Println(hh)
+	//total = utils.ToPtr[int64](1)
+	//fmt.Println(*total)
+}
