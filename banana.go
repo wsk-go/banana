@@ -9,10 +9,6 @@ import (
 	"reflect"
 )
 
-const (
-	BeanNotFound = ""
-)
-
 func DefaultApp() *fiber.App {
 	return fiber.New()
 }

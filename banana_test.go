@@ -3,7 +3,7 @@ package banana
 import (
 	"fmt"
 	"github.com/JackWSK/banana/defines"
-	"github.com/JackWSK/banana/zaplogger"
+	"github.com/JackWSK/banana/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	_recover "github.com/gofiber/fiber/v2/middleware/recover"
@@ -20,10 +20,10 @@ type User2 struct {
 }
 
 type UserRegister struct {
-	Logger *zaplogger.Logger `inject:""`
+	Logger *logger.Logger `inject:""`
 }
 
-func (u *UserRegister) UserService(Logger *zaplogger.Logger) (*User2, string, error) {
+func (u *UserRegister) UserService(Logger *logger.Logger) (*User2, string, error) {
 	return &User2{}, "", nil
 }
 
@@ -41,7 +41,7 @@ func (u *UserRegister) Configuration() defines.ModuleFunc {
 }
 
 type UserController struct {
-	Logger *zaplogger.Logger `inject:""`
+	Logger *logger.Logger `inject:""`
 }
 
 func (th *UserController) HelloWorld() Mapping {
@@ -132,11 +132,11 @@ func TestRegister(t *testing.T) {
 
 	testBean := &TestBean{}
 
-	err := application.Import(zaplogger.Configuration(zaplogger.LoggerConfig{
+	err := application.Import(logger.Configuration(logger.LoggerConfig{
 		Level:  zapcore.DebugLevel,
-		Writer: zaplogger.NewFileWriter("logger.default"),
+		Writer: logger.NewFileWriter("logger.default"),
 		LevelWriter: map[zapcore.Level]io.Writer{
-			zapcore.InfoLevel: zaplogger.NewFileWriter("logger.info"),
+			zapcore.InfoLevel: logger.NewFileWriter("logger.info"),
 		},
 	}))
 
@@ -178,11 +178,11 @@ func TestGetBean(t *testing.T) {
 		Engine: engine,
 	})
 
-	err := application.Import(zaplogger.Configuration(zaplogger.LoggerConfig{
+	err := application.Import(logger.Configuration(logger.LoggerConfig{
 		Level:  zapcore.DebugLevel,
-		Writer: zaplogger.NewFileWriter("logger.default"),
+		Writer: logger.NewFileWriter("logger.default"),
 		LevelWriter: map[zapcore.Level]io.Writer{
-			zapcore.InfoLevel: zaplogger.NewFileWriter("logger.info"),
+			zapcore.InfoLevel: logger.NewFileWriter("logger.info"),
 		},
 	}))
 
@@ -226,9 +226,9 @@ func TestReflect2(t *testing.T) {
 }
 
 //type MyRegister struct {
-//	Logger *zaplogger.Logger `inject:"" method:"UserService,UserService2"`
-//	Logger *zaplogger.Logger `inject:""`
-//	Logger *zaplogger.Logger `inject:""`
+//	Logger *logger.Logger `inject:"" method:"UserService,UserService2"`
+//	Logger *logger.Logger `inject:""`
+//	Logger *logger.Logger `inject:""`
 //}
 //
 //func (u *MyRegister) UserService() (*User2, string, error) {
