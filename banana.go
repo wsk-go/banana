@@ -43,12 +43,20 @@ func (th *Banana) Engine() *fiber.App {
 	return th.engine
 }
 
+func GetBeanByType[T any](banana *Banana, value T) T {
+	return banana.GetBeanByType(reflect.TypeOf(value)).(T)
+}
+
 func (th *Banana) GetBeanByType(t reflect.Type) any {
 	if bean, ok := th.typed[t]; ok {
 		return bean.Value
 	}
 
 	return nil
+}
+
+func GetBeanByName[T any](banana *Banana, name string) T {
+	return banana.GetBeanByName(name).(T)
 }
 
 func (th *Banana) GetBeanByName(name string) any {
@@ -188,9 +196,9 @@ func (th *Banana) callHook(beans []*defines.Bean) error {
 		}
 
 		// continue configuration
-		if beanConfiguration, ok := b.Value.(defines.BeanConfiguration); ok {
-			configurations = append(configurations, beanConfiguration.Configuration())
-		}
+		//if beanConfiguration, ok := b.Value.(defines.BeanConfiguration); ok {
+		//	configurations = append(configurations, beanConfiguration.Configuration())
+		//}
 	}
 
 	if len(configurations) > 0 {

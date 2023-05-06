@@ -6,7 +6,7 @@ type Bean struct {
 	// the object you try to register
 	Value any
 
-	// the name you register in nest
+	// the name you register in banana
 	Name string
 
 	// type

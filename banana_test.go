@@ -18,8 +18,13 @@ import (
 type User2 struct {
 	Name string
 }
+
 type UserRegister struct {
 	Logger *zaplogger.Logger `inject:""`
+}
+
+func (u *UserRegister) UserService(Logger *zaplogger.Logger) (*User2, string, error) {
+	return &User2{}, "", nil
 }
 
 func (u *UserRegister) Configuration() defines.ModuleFunc {
@@ -181,3 +186,29 @@ func TestReflect2(t *testing.T) {
 	//
 	//fmt.Println(reflect.TypeOf((*server.Mapping)(nil)).Elem().AssignableTo(tt))
 }
+
+//type MyRegister struct {
+//	Logger *zaplogger.Logger `inject:"" method:"UserService,UserService2"`
+//	Logger *zaplogger.Logger `inject:""`
+//	Logger *zaplogger.Logger `inject:""`
+//}
+//
+//func (u *MyRegister) UserService() (*User2, string, error) {
+//	return &User2{}, "", nil
+//}
+//
+//func (u *MyRegister) UserService2() (*User2, string, error) {
+//	return &User2{}, "", nil
+//}
+
+//func TestMyRegister(test *testing.T) {
+//	t := reflect.TypeOf(&MyRegister{})
+//	for i := 0; i < t.NumMethod(); i++ {
+//		method := t.Method(i)
+//		for j := 0; j < method.Type.NumIn(); j++ {
+//			argType := method.Type.In(j)
+//			v := reflect.ValueOf(&MyRegister{})
+//			fmt.Println(argType.String())
+//		}
+//	}
+//}
