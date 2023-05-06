@@ -1,4 +1,4 @@
-package utils
+package stream
 
 type pipeline[T any] struct {
 	next   *pipeline[T]
@@ -9,13 +9,13 @@ func (th *pipeline[T]) Accept(e T) {
 	th.accept(e, th.next)
 }
 
-type SliceStream[T any] struct {
+type Stream[T any] struct {
 	//elements []T
 	head func()
 	last *pipeline[T]
 }
 
-func (th *SliceStream[T]) Filter(filter func(T) bool) *SliceStream[T] {
+func (th *Stream[T]) Filter(filter func(T) bool) *Stream[T] {
 	th.addPipeline(func(e T, next *pipeline[T]) {
 		if filter(e) {
 			next.Accept(e)
@@ -24,14 +24,14 @@ func (th *SliceStream[T]) Filter(filter func(T) bool) *SliceStream[T] {
 	return th
 }
 
-func (th *SliceStream[T]) Map(mapper func(T) T) *SliceStream[T] {
+func (th *Stream[T]) Map(mapper func(T) T) *Stream[T] {
 	th.addPipeline(func(e T, next *pipeline[T]) {
 		next.Accept(mapper(e))
 	})
 	return th
 }
 
-func (th *SliceStream[T]) accept(accept func(T)) {
+func (th *Stream[T]) accept(accept func(T)) {
 	th.addPipeline(func(e T, next *pipeline[T]) {
 		accept(e)
 	})
@@ -39,7 +39,7 @@ func (th *SliceStream[T]) accept(accept func(T)) {
 	th.head()
 }
 
-func (th *SliceStream[T]) addPipeline(accept func(e T, next *pipeline[T])) {
+func (th *Stream[T]) addPipeline(accept func(e T, next *pipeline[T])) {
 	s := &pipeline[T]{
 		accept: accept,
 	}
@@ -47,7 +47,7 @@ func (th *SliceStream[T]) addPipeline(accept func(e T, next *pipeline[T])) {
 	th.last = s
 }
 
-func Stream[T any](elements []T) *SliceStream[T] {
+func Of[T any](elements []T) *Stream[T] {
 	p := &pipeline[T]{
 		accept: func(e T, next *pipeline[T]) {
 			if next != nil {
@@ -55,7 +55,7 @@ func Stream[T any](elements []T) *SliceStream[T] {
 			}
 		},
 	}
-	return &SliceStream[T]{
+	return &Stream[T]{
 		head: func() {
 			for _, element := range elements {
 				p.Accept(element)
@@ -65,7 +65,7 @@ func Stream[T any](elements []T) *SliceStream[T] {
 	}
 }
 
-func (th *SliceStream[T]) ToList() []T {
+func (th *Stream[T]) ToList() []T {
 	var out []T
 
 	th.accept(func(in T) {
@@ -75,7 +75,7 @@ func (th *SliceStream[T]) ToList() []T {
 	return out
 }
 
-func MapStream[IN any, OUT any](s *SliceStream[IN], mapper func(IN) OUT) *SliceStream[OUT] {
+func MapStream[IN any, OUT any](s *Stream[IN], mapper func(IN) OUT) *Stream[OUT] {
 
 	last := &pipeline[OUT]{
 		accept: func(e OUT, next *pipeline[OUT]) {
@@ -85,7 +85,7 @@ func MapStream[IN any, OUT any](s *SliceStream[IN], mapper func(IN) OUT) *SliceS
 		},
 	}
 
-	return &SliceStream[OUT]{
+	return &Stream[OUT]{
 		head: func() {
 			s.accept(func(in IN) {
 				last.Accept(mapper(in))
@@ -95,7 +95,7 @@ func MapStream[IN any, OUT any](s *SliceStream[IN], mapper func(IN) OUT) *SliceS
 	}
 }
 
-func Map[IN any, OUT any](s *SliceStream[IN], mapper func(IN) OUT) []OUT {
+func Map[IN any, OUT any](s *Stream[IN], mapper func(IN) OUT) []OUT {
 	var out []OUT
 	s.accept(func(in IN) {
 		out = append(out, mapper(in))
@@ -104,13 +104,13 @@ func Map[IN any, OUT any](s *SliceStream[IN], mapper func(IN) OUT) []OUT {
 	return out
 }
 
-func ToMap[IN any, KEY comparable](s *SliceStream[IN], keyMapper func(IN) KEY) map[KEY]IN {
+func ToMap[IN any, KEY comparable](s *Stream[IN], keyMapper func(IN) KEY) map[KEY]IN {
 	return ToMapV(s, keyMapper, func(in IN) IN {
 		return in
 	})
 }
 
-func ToMapV[IN any, KEY comparable, VALUE any](s *SliceStream[IN], keyMapper func(IN) KEY, valueMapper func(IN) VALUE) map[KEY]VALUE {
+func ToMapV[IN any, KEY comparable, VALUE any](s *Stream[IN], keyMapper func(IN) KEY, valueMapper func(IN) VALUE) map[KEY]VALUE {
 	m := make(map[KEY]VALUE)
 	s.accept(func(in IN) {
 		key := keyMapper(in)
@@ -121,13 +121,13 @@ func ToMapV[IN any, KEY comparable, VALUE any](s *SliceStream[IN], keyMapper fun
 	return m
 }
 
-func Group[IN any, KEY comparable](s *SliceStream[IN], keyMapper func(IN) KEY) map[KEY][]IN {
+func Group[IN any, KEY comparable](s *Stream[IN], keyMapper func(IN) KEY) map[KEY][]IN {
 	return GroupV(s, keyMapper, func(in IN) IN {
 		return in
 	})
 }
 
-func GroupV[IN any, KEY comparable, VALUE any](s *SliceStream[IN], keyMapper func(IN) KEY, valueMapper func(IN) VALUE) map[KEY][]VALUE {
+func GroupV[IN any, KEY comparable, VALUE any](s *Stream[IN], keyMapper func(IN) KEY, valueMapper func(IN) VALUE) map[KEY][]VALUE {
 	m := make(map[KEY][]VALUE)
 
 	s.accept(func(in IN) {

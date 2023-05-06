@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/JackWSK/banana/defines"
-	"github.com/JackWSK/banana/utils"
+	"github.com/JackWSK/banana/utils/stream"
 	"reflect"
 )
 
@@ -142,7 +142,7 @@ func (th *Banana) Run(addr string) error {
 }
 
 func (th *Banana) prepareBeans() error {
-	beans := utils.Stream(th.beans).Filter(func(bean *defines.Bean) bool {
+	beans := stream.Of(th.beans).Filter(func(bean *defines.Bean) bool {
 		return bean.Injected == false
 	}).ToList()
 

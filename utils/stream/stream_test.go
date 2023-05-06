@@ -1,4 +1,4 @@
-package utils
+package stream
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 func TestStream1(t *testing.T) {
 	aaa := []string{"123", "456"}
-	Stream(aaa).
+	Of(aaa).
 		Filter(func(s string) bool {
 			return true
 		}).ToList()
@@ -15,7 +15,7 @@ func TestStream1(t *testing.T) {
 
 func TestStream(t *testing.T) {
 	aaa := []string{"123", "456"}
-	aa := Map(Stream(aaa).
+	aa := Map(Of(aaa).
 		Filter(func(s string) bool {
 			return s == "123"
 		}),
@@ -31,7 +31,7 @@ func TestMapStream(t *testing.T) {
 	aaa := []string{"123", "123", "1234", "456"}
 
 	aa := MapStream(
-		Stream(aaa).
+		Of(aaa).
 			Filter(func(s string) bool {
 				return s == "123" || s == "1234"
 			}),
@@ -49,7 +49,7 @@ type User struct {
 
 func TestGroupBy(t *testing.T) {
 	aaa := []User{{id: "123"}, {id: "123"}, {id: "1234"}}
-	aa := Group(Stream(aaa),
+	aa := Group(Of(aaa),
 		func(in User) string {
 			return in.id
 		},
