@@ -3,7 +3,22 @@ package defines
 import (
 	"context"
 	"mime/multipart"
+	"time"
 )
+
+// Cookie data for c.Cookie
+type Cookie struct {
+	Name        string    `json:"name"`
+	Value       string    `json:"value"`
+	Path        string    `json:"path"`
+	Domain      string    `json:"domain"`
+	MaxAge      int       `json:"max_age"`
+	Expires     time.Time `json:"expires"`
+	Secure      bool      `json:"secure"`
+	HTTPOnly    bool      `json:"http_only"`
+	SameSite    string    `json:"same_site"`
+	SessionOnly bool      `json:"session_only"`
+}
 
 type Handler = func(Context) error
 
@@ -40,6 +55,70 @@ type Context interface {
 
 	// BaseURL returns (protocol + host + base path).
 	BaseURL() string
+
+	// Query returns the query string parameter in the url.
+	// Defaults to empty string "" if the query doesn't exist.
+	// If a default value is given, it will return that value if the query doesn't exist.
+	// Returned value is only valid within the handler. Do not store any references.
+	// Make copies or use the Immutable setting to use the value outside the Handler.
+	Query(key string, defaultValue ...string) string
+
+	// QueryInt returns integer value of key string parameter in the url.
+	// Default to empty or invalid key is 0.
+	//
+	//	GET /?name=alex&wanna_cake=2&id=
+	//	QueryInt("wanna_cake", 1) == 2
+	//	QueryInt("name", 1) == 1
+	//	QueryInt("id", 1) == 1
+	//	QueryInt("id") == 0
+	QueryInt(key string, defaultValue ...int) int
+
+	// QueryBool returns bool value of key string parameter in the url.
+	// Default to empty or invalid key is true.
+	//
+	//	Get /?name=alex&want_pizza=false&id=
+	//	QueryBool("want_pizza") == false
+	//	QueryBool("want_pizza", true) == false
+	//	QueryBool("name") == false
+	//	QueryBool("name", true) == true
+	//	QueryBool("id") == false
+	//	QueryBool("id", true) == true
+	QueryBool(key string, defaultValue ...bool) bool
+
+	// QueryFloat returns float64 value of key string parameter in the url.
+	// Default to empty or invalid key is 0.
+	//
+	//	GET /?name=alex&amount=32.23&id=
+	//	QueryFloat("amount") = 32.23
+	//	QueryFloat("amount", 3) = 32.23
+	//	QueryFloat("name", 1) = 1
+	//	QueryFloat("name") = 0
+	//	QueryFloat("id", 3) = 3
+	QueryFloat(key string, defaultValue ...float64) float64
+
+	// QueryParser binds the query string to a struct.
+	QueryParser(out any) error
+
+	// Params is used to get the route parameters.
+	// Defaults to empty string "" if the param doesn't exist.
+	// If a default value is given, it will return that value if the param doesn't exist.
+	// Returned value is only valid within the handler. Do not store any references.
+	// Make copies or use the Immutable setting to use the value outside the Handler.
+	Params(key string, defaultValue ...string) string
+
+	// AllParams Params is used to get all route parameters.
+	// Using Params method to get params.
+	AllParams() map[string]string
+
+	// ParamsParser binds the param string to a struct.
+	ParamsParser(out interface{}) error
+
+	// ParamsInt is used to get an integer from the route parameters
+	// it defaults to zero if the parameter is not found or if the
+	// parameter cannot be converted to an integer
+	// If a default value is given, it will return that value in case the param
+	// doesn't exist or cannot be converted to an integer
+	ParamsInt(key string, defaultValue ...int) (int, error)
 
 	// JSON converts any interface or string to JSON.
 	// Array and slice values encode as JSON arrays,
@@ -93,4 +172,69 @@ type Context interface {
 
 	// WriteString appends s to response body.
 	WriteString(s string) (int, error)
+
+	// RawContext return the context your framework use
+	RawContext() any
+
+	// Protocol contains the request protocol string: http or https for TLS requests.
+	// Please use Config.EnableTrustedProxyCheck to prevent header spoofing, in case when your app is behind the proxy.
+	Protocol() string
+
+	// Path returns the path part of the request URL.
+	// Optionally, you could override the path.
+	Path() string
+
+	// OriginalURL contains the original request URL.
+	// Returned value is only valid within the handler. Do not store any references.
+	// Make copies or use the Immutable setting to use the value outside the Handler.
+	OriginalURL() string
+
+	// Get returns the HTTP request header specified by field.
+	// Field names are case-insensitive
+	// Returned value is only valid within the handler. Do not store any references.
+	// Make copies or use the Immutable setting instead.
+	Get(key string, defaultValue ...string) string
+
+	// GetRespHeader returns the HTTP response header specified by field.
+	// Field names are case-insensitive
+	// Returned value is only valid within the handler. Do not store any references.
+	// Make copies or use the Immutable setting instead.
+	GetRespHeader(key string, defaultValue ...string) string
+
+	// GetRespHeaders returns the HTTP response headers.
+	// Returned value is only valid within the handler. Do not store any references.
+	// Make copies or use the Immutable setting instead.
+	GetRespHeaders() map[string]string
+
+	// GetReqHeaders returns the HTTP request headers.
+	// Returned value is only valid within the handler. Do not store any references.
+	// Make copies or use the Immutable setting instead.
+	GetReqHeaders() map[string]string
+
+	// FormFile returns the first file by key from a MultipartForm.
+	FormFile(key string) (*multipart.FileHeader, error)
+
+	// FormValue returns the first value by key from a MultipartForm.
+	// Search is performed in QueryArgs, PostArgs, MultipartForm and FormFile in this particular order.
+	// Defaults to the empty string "" if the form value doesn't exist.
+	// If a default value is given, it will return that value if the form value does not exist.
+	// Returned value is only valid within the handler. Do not store any references.
+	// Make copies or use the Immutable setting instead.
+	FormValue(key string, defaultValue ...string) string
+
+	// Download transfers the file from path as an attachment.
+	// Typically, browsers will prompt the user for download.
+	// By default, the Content-Disposition header filename= parameter is the filepath (this typically appears in the browser dialog).
+	// Override this default with the filename parameter.
+	Download(file string, filename ...string) error
+
+	// Cookies are used for getting a cookie value by key.
+	// Defaults to the empty string "" if the cookie doesn't exist.
+	// If a default value is given, it will return that value if the cookie doesn't exist.
+	// The returned value is only valid within the handler. Do not store any references.
+	// Make copies or use the Immutable setting to use the value outside the Handler.
+	Cookies(key string, defaultValue ...string) string
+
+	// Cookie sets a cookie by passing a cookie struct.
+	Cookie(cookie *Cookie)
 }

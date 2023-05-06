@@ -41,6 +41,101 @@ type Context struct {
 	ctx *fiber.Ctx
 }
 
+func (c *Context) Query(key string, defaultValue ...string) string {
+	return c.ctx.Query(key, defaultValue...)
+}
+
+func (c *Context) QueryInt(key string, defaultValue ...int) int {
+	return c.ctx.QueryInt(key, defaultValue...)
+}
+
+func (c *Context) QueryBool(key string, defaultValue ...bool) bool {
+	return c.ctx.QueryBool(key, defaultValue...)
+}
+
+func (c *Context) QueryFloat(key string, defaultValue ...float64) float64 {
+	return c.ctx.QueryFloat(key, defaultValue...)
+}
+
+func (c *Context) QueryParser(out any) error {
+	return c.ctx.QueryParser(out)
+}
+
+func (c *Context) Params(key string, defaultValue ...string) string {
+	return c.ctx.Params(key, defaultValue...)
+}
+
+func (c *Context) AllParams() map[string]string {
+	return c.ctx.AllParams()
+}
+
+func (c *Context) ParamsParser(out interface{}) error {
+	return c.ctx.ParamsParser(out)
+}
+
+func (c *Context) ParamsInt(key string, defaultValue ...int) (int, error) {
+	return c.ctx.ParamsInt(key, defaultValue...)
+}
+
+func (c *Context) Protocol() string {
+	return c.ctx.Protocol()
+}
+
+func (c *Context) Path() string {
+	return c.ctx.Path()
+}
+
+func (c *Context) OriginalURL() string {
+	return c.ctx.OriginalURL()
+}
+
+func (c *Context) Get(key string, defaultValue ...string) string {
+	return c.ctx.Get(key, defaultValue...)
+}
+
+func (c *Context) GetRespHeader(key string, defaultValue ...string) string {
+	return c.ctx.GetRespHeader(key, defaultValue...)
+}
+
+func (c *Context) GetRespHeaders() map[string]string {
+	return c.ctx.GetRespHeaders()
+}
+
+func (c *Context) GetReqHeaders() map[string]string {
+	return c.ctx.GetReqHeaders()
+}
+
+func (c *Context) FormFile(key string) (*multipart.FileHeader, error) {
+	return c.ctx.FormFile(key)
+}
+
+func (c *Context) FormValue(key string, defaultValue ...string) string {
+	return c.ctx.FormValue(key, defaultValue...)
+}
+
+func (c *Context) Download(file string, filename ...string) error {
+	return c.ctx.Download(file, filename...)
+}
+
+func (c *Context) Cookies(key string, defaultValue ...string) string {
+	return c.ctx.Cookies(key, defaultValue...)
+}
+
+func (c *Context) Cookie(cookie *defines.Cookie) {
+	c.ctx.Cookie(&fiber.Cookie{
+		Name:        cookie.Name,
+		Value:       cookie.Value,
+		Path:        cookie.Path,
+		Domain:      cookie.Domain,
+		MaxAge:      cookie.MaxAge,
+		Expires:     cookie.Expires,
+		Secure:      cookie.Secure,
+		HTTPOnly:    cookie.HTTPOnly,
+		SameSite:    cookie.SameSite,
+		SessionOnly: cookie.SessionOnly,
+	})
+}
+
 func (c *Context) Status(status int) {
 	c.ctx.Status(status)
 }
@@ -129,4 +224,8 @@ func (c *Context) Next() error {
 
 func (c *Context) Body() []byte {
 	return c.ctx.Body()
+}
+
+func (c *Context) RawContext() any {
+	return c.ctx
 }
