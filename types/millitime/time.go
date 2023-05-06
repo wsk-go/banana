@@ -1,4 +1,4 @@
-package types
+package millitime
 
 import (
 	"encoding/json"
@@ -39,15 +39,15 @@ func (th MilliTime) MarshalJSON() ([]byte, error) {
 	return json.Marshal(time.Time(th).UnixMilli())
 }
 
-func NewMilliTime() MilliTime {
+func Now() MilliTime {
 	return MilliTime(time.Now())
 }
 
-func MilliTimeFromTime(time time.Time) MilliTime {
+func FromTime(time time.Time) MilliTime {
 	return MilliTime(time)
 }
 
-func NewMilliTimeFromTimePtr(time *time.Time) *MilliTime {
+func NewFromTimePtr(time *time.Time) *MilliTime {
 	return (*MilliTime)(time)
 }
 
