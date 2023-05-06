@@ -10,7 +10,7 @@ type Handler = func(Context) error
 type Engine interface {
 	Add(method, path string, handlers Handler)
 
-	Run(addr string) error
+	Listen(addr string) error
 }
 
 type Context interface {
@@ -79,4 +79,17 @@ type Context interface {
 	// Returned value is only valid within the handler. Do not store any references.
 	// Make copies or use the Immutable setting instead.
 	Body() []byte
+
+	// Status sets the HTTP status for the response.
+	// This method is chainable.
+	Status(status int)
+
+	// Write appends p into response body.
+	Write(p []byte) (int, error)
+
+	// Writef appends f & a into response body writer.
+	Writef(f string, a ...interface{}) (int, error)
+
+	// WriteString appends s to response body.
+	WriteString(s string) (int, error)
 }

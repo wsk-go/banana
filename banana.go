@@ -5,20 +5,15 @@ import (
 	"fmt"
 	"github.com/JackWSK/banana/defines"
 	"github.com/JackWSK/banana/utils"
-	"github.com/gofiber/fiber/v2"
 	"reflect"
 )
-
-func DefaultApp() *fiber.App {
-	return fiber.New()
-}
 
 type MethodMapping struct {
 	method reflect.Method
 }
 
 type Config struct {
-	Engine *fiber.App
+	Engine defines.Engine
 }
 
 type Banana struct {
@@ -27,19 +22,16 @@ type Banana struct {
 	named       map[string]*defines.Bean
 	typed       map[reflect.Type]*defines.Bean
 
-	engine *fiber.App
+	engine defines.Engine
 }
 
 func New(config Config) *Banana {
-	if config.Engine == nil {
-		config.Engine = DefaultApp()
-	}
 	return &Banana{
 		engine: config.Engine,
 	}
 }
 
-func (th *Banana) Engine() *fiber.App {
+func (th *Banana) Engine() defines.Engine {
 	return th.engine
 }
 

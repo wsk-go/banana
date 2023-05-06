@@ -1,22 +1,20 @@
 package banana
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"github.com/JackWSK/banana/defines"
 	"net/http"
 )
-
-type HandlerFunc fiber.Handler
 
 type Mapping interface {
 	GetMethod() string
 	GetPath() string
-	GetHandler() HandlerFunc
+	GetHandler() defines.Handler
 }
 
 type RequestMapping struct {
 	Method  string
 	Path    string
-	Handler HandlerFunc
+	Handler defines.Handler
 }
 
 func (th RequestMapping) GetMethod() string {
@@ -27,13 +25,13 @@ func (th RequestMapping) GetPath() string {
 	return th.Path
 }
 
-func (th RequestMapping) GetHandler() HandlerFunc {
+func (th RequestMapping) GetHandler() defines.Handler {
 	return th.Handler
 }
 
 type GetMapping struct {
 	Path    string
-	Handler HandlerFunc
+	Handler defines.Handler
 }
 
 func (th GetMapping) GetMethod() string {
@@ -44,13 +42,13 @@ func (th GetMapping) GetPath() string {
 	return th.Path
 }
 
-func (th GetMapping) GetHandler() HandlerFunc {
+func (th GetMapping) GetHandler() defines.Handler {
 	return th.Handler
 }
 
 type PostMapping struct {
 	Path    string
-	Handler HandlerFunc
+	Handler defines.Handler
 }
 
 func (th PostMapping) GetMethod() string {
@@ -61,13 +59,13 @@ func (th PostMapping) GetPath() string {
 	return th.Path
 }
 
-func (th PostMapping) GetHandler() HandlerFunc {
+func (th PostMapping) GetHandler() defines.Handler {
 	return th.Handler
 }
 
 type PutMapping struct {
 	Path    string
-	Handler HandlerFunc
+	Handler defines.Handler
 }
 
 func (th PutMapping) GetMethod() string {
@@ -78,13 +76,13 @@ func (th PutMapping) GetPath() string {
 	return th.Path
 }
 
-func (th PutMapping) GetHandler() HandlerFunc {
+func (th PutMapping) GetHandler() defines.Handler {
 	return th.Handler
 }
 
 type DeleteMapping struct {
 	Path    string
-	Handler HandlerFunc
+	Handler defines.Handler
 }
 
 func (th DeleteMapping) GetMethod() string {
@@ -95,6 +93,6 @@ func (th DeleteMapping) GetPath() string {
 	return th.Path
 }
 
-func (th DeleteMapping) GetHandler() HandlerFunc {
+func (th DeleteMapping) GetHandler() defines.Handler {
 	return th.Handler
 }

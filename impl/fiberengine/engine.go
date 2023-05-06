@@ -3,6 +3,7 @@ package fiberengine
 import (
 	"github.com/JackWSK/banana/defines"
 	"github.com/gofiber/fiber/v2"
+	_recover "github.com/gofiber/fiber/v2/middleware/recover"
 	"mime/multipart"
 	"time"
 )
@@ -11,8 +12,35 @@ type FiberEngine struct {
 	app *fiber.App
 }
 
+func New(config ...fiber.Config) *FiberEngine {
+	app := fiber.New(config...)
+	app.Use(_recover.New())
+	return &FiberEngine{
+		app: fiber.New(config...),
+	}
+}
+
 type Context struct {
 	ctx *fiber.Ctx
+}
+
+func (c *Context) Status(status int) {
+	c.ctx.Status(status)
+}
+
+// Write appends p into response body.
+func (c *Context) Write(p []byte) (int, error) {
+	return c.ctx.Write(p)
+}
+
+// Writef appends f & a into response body writer.
+func (c *Context) Writef(f string, a ...interface{}) (int, error) {
+	return c.ctx.Writef(f, a...)
+}
+
+// WriteString appends s to response body.
+func (c *Context) WriteString(s string) (int, error) {
+	return c.ctx.WriteString(s)
 }
 
 func (c *Context) Deadline() (deadline time.Time, ok bool) {
@@ -86,24 +114,11 @@ func (c *Context) Body() []byte {
 	return c.ctx.Body()
 }
 
-func New(config ...fiber.Config) *FiberEngine {
-	app := fiber.New(config...)
-	app.Use(func(ctx *fiber.Ctx) error {
-		//ctx.Context().SetUserValue("__context__", &Context{
-		//	ctx: ctx,
-		//})
-		return ctx.Next()
-	})
-	return &FiberEngine{
-		app: fiber.New(config...),
-	}
-}
-
 func (f *FiberEngine) App() *fiber.App {
 	return f.app
 }
 
-func (f *FiberEngine) Run(addr string) error {
+func (f *FiberEngine) Listen(addr string) error {
 	return f.app.Listen(addr)
 }
 
