@@ -20,6 +20,23 @@ func New(config ...fiber.Config) *FiberEngine {
 	}
 }
 
+func (f *FiberEngine) App() *fiber.App {
+	return f.app
+}
+
+func (f *FiberEngine) Listen(addr string) error {
+	return f.app.Listen(addr)
+}
+
+func (f *FiberEngine) Add(method, path string, handler defines.Handler) {
+	f.app.Add(method, path, func(ctx *fiber.Ctx) error {
+		//c := ctx.Context().Value("__context__").(*Context)
+		return handler(&Context{
+			ctx: ctx,
+		})
+	})
+}
+
 type Context struct {
 	ctx *fiber.Ctx
 }
@@ -112,21 +129,4 @@ func (c *Context) Next() error {
 
 func (c *Context) Body() []byte {
 	return c.ctx.Body()
-}
-
-func (f *FiberEngine) App() *fiber.App {
-	return f.app
-}
-
-func (f *FiberEngine) Listen(addr string) error {
-	return f.app.Listen(addr)
-}
-
-func (f *FiberEngine) Add(method, path string, handler defines.Handler) {
-	f.app.Add(method, path, func(ctx *fiber.Ctx) error {
-		//c := ctx.Context().Value("__context__").(*Context)
-		return handler(&Context{
-			ctx: ctx,
-		})
-	})
 }

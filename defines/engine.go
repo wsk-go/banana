@@ -8,8 +8,9 @@ import (
 type Handler = func(Context) error
 
 type Engine interface {
+	// Add allows you to specify a HTTP method to register a route
 	Add(method, path string, handlers Handler)
-
+	// Listen serves HTTP requests from the given addr.
 	Listen(addr string) error
 }
 
