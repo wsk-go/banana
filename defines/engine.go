@@ -239,20 +239,60 @@ type Context interface {
 	Cookie(cookie *Cookie)
 }
 
-func BodyParser[T any](ctx Context) (*T, error) {
+type StructValidator interface {
+	Struct(obj any) error
+}
+
+func BodyParser[T any](ctx Context, validator ...StructValidator) (*T, error) {
 	var t T
 	err := ctx.BodyParser(&t)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(validator) > 0 {
+		for _, structValidator := range validator {
+			if err = structValidator.Struct(t); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	return &t, err
 }
 
-func QueryParser[T any](ctx Context) (*T, error) {
+func QueryParser[T any](ctx Context, validator ...StructValidator) (*T, error) {
 	var t T
 	err := ctx.QueryParser(&t)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(validator) > 0 {
+		for _, structValidator := range validator {
+			if err = structValidator.Struct(t); err != nil {
+				return nil, err
+			}
+		}
+	}
 	return &t, err
 }
 
-func ParamParser[T any](ctx Context) (*T, error) {
+func ParamParser[T any](ctx Context, validator ...StructValidator) (*T, error) {
 	var t T
 	err := ctx.ParamsParser(&t)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(validator) > 0 {
+		for _, structValidator := range validator {
+			if err = structValidator.Struct(t); err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	return &t, err
 }
