@@ -159,7 +159,7 @@ func (e *LogicError) Format(s fmt.State, verb rune) {
 	}
 }
 
-func NewLogicError(message string, code int) *LogicError {
+func NewLogicError(message string, code any) *LogicError {
 	return &LogicError{
 		msg:   message,
 		code:  code,
