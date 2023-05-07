@@ -67,7 +67,7 @@ func (th *Validator) Struct(obj any) error {
 	return th.StructI18n(obj)
 }
 
-func (th *Validator) StructI18n(obj any, locale ...string) error {
+func (th *Validator) StructWithLocale(obj any, locale ...string) error {
 	value := reflect.ValueOf(obj)
 	valueType := value.Kind()
 	if valueType == reflect.Ptr {
