@@ -80,21 +80,20 @@ func (th *Validator) Struct(obj any) error {
 
 // TranslateFirst find the first error to translate
 func (th *Validator) TranslateFirst(ve validator.ValidationErrors, locale ...string) string {
-	trans := th.findTrans(locale...)
 	for _, vee := range ve {
-		message := vee.Translate(trans)
-		return message
+		if th.uTranslator != nil {
+			trans := th.findTrans(locale...)
+
+			message := vee.Translate(trans)
+			return message
+		} else {
+			return vee.Error()
+		}
 	}
 	return ve.Error()
 }
 
-// Translate translate all errors
-func (th *Validator) Translate(ve validator.ValidationErrors, locale ...string) map[string]string {
-	trans := th.findTrans(locale...)
-	return ve.Translate(trans)
-}
-
-func (th *Validator) findTrans(locale ...string) ut.Translator {
+func (th *Validator) findTrans(locale ...string) locales.Translator {
 
 	if th.uTranslator == nil {
 		panic("uniTranslator is nil")
