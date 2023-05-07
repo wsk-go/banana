@@ -70,37 +70,50 @@ func (th *Validator) Struct(obj any) error {
 		valueType = value.Elem().Kind()
 	}
 	if valueType == reflect.Struct {
-		return th.validate.Struct(obj)
+		err := th.validate.Struct(obj)
+		if err != nil {
+			return errors.WithStack(err)
+		}
 	}
 	return nil
 }
 
-func (th *Validator) Translate(err error, locale ...string) error {
-	if ve, ok := err.(validator.ValidationErrors); ok {
-		for _, vee := range ve {
-			if th.uTranslator != nil {
-				var trans ut.Translator
-				var found bool
-				for _, s := range locale {
-					trans, found = th.uTranslator.GetTranslator(s)
-					if found {
-						break
-					}
-				}
+// TranslateFirst find the first error to translate
+func (th *Validator) TranslateFirst(ve validator.ValidationErrors, locale ...string) string {
+	trans := th.findTrans(locale...)
+	for _, vee := range ve {
+		message := vee.Translate(trans)
+		return message
+	}
+	return ve.Error()
+}
 
-				if !found {
-					trans = th.uTranslator.GetFallback()
-				}
+// Translate translate all errors
+func (th *Validator) Translate(ve validator.ValidationErrors, locale ...string) map[string]string {
+	trans := th.findTrans(locale...)
+	return ve.Translate(trans)
+}
 
-				message := vee.Translate(trans)
-				return errors.NewValidationError(message)
-			} else {
-				return errors.NewValidationError(vee.Error())
-			}
+func (th *Validator) findTrans(locale ...string) ut.Translator {
+
+	if th.uTranslator == nil {
+		panic("uniTranslator is nil")
+	}
+
+	var trans ut.Translator
+	var found bool
+	for _, s := range locale {
+		trans, found = th.uTranslator.GetTranslator(s)
+		if found {
+			break
 		}
 	}
 
-	return err
+	if !found {
+		trans = th.uTranslator.GetFallback()
+	}
+
+	return trans
 }
 
 func (th *Validator) AddTranslation(translator locales.Translator, register func(*validator.Validate, ut.Translator) error) error {
