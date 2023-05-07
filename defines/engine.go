@@ -20,7 +20,7 @@ type Cookie struct {
 	SessionOnly bool      `json:"session_only"`
 }
 
-type Handler = func(Context) error
+type Handler func(Context) error
 
 type Engine interface {
 	// Add allows you to specify a HTTP method to register a route
@@ -237,4 +237,22 @@ type Context interface {
 
 	// Cookie sets a cookie by passing a cookie struct.
 	Cookie(cookie *Cookie)
+}
+
+func BodyParser[T any](ctx Context) (*T, error) {
+	var t T
+	err := ctx.BodyParser(&t)
+	return &t, err
+}
+
+func QueryParser[T any](ctx Context) (*T, error) {
+	var t T
+	err := ctx.QueryParser(&t)
+	return &t, err
+}
+
+func ParamParser[T any](ctx Context) (*T, error) {
+	var t T
+	err := ctx.ParamsParser(&t)
+	return &t, err
 }
