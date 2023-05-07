@@ -49,6 +49,6 @@ func TestValidator(t *testing.T) {
 		Name: "jack",
 	}
 
-	err = validator.ValidateStruct(user, "en")
+	err = validator.Struct(user)
 	fmt.Printf("%+v", err)
 }

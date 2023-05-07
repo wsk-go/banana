@@ -98,9 +98,9 @@ func (th *Validator) Translate(err error, locale ...string) error {
 				return errors.NewValidationError(vee.Error())
 			}
 		}
-	} else {
-		return ve
 	}
+
+	return err
 }
 
 func (th *Validator) AddTranslation(translator locales.Translator, register func(*validator.Validate, ut.Translator) error) error {
