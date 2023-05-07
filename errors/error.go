@@ -131,7 +131,7 @@ func (v *ValidationError) Error() string {
 
 type LogicError struct {
 	msg  string
-	code int
+	code any
 	*stack
 }
 
@@ -139,7 +139,7 @@ func (e *LogicError) Error() string {
 	return e.msg
 }
 
-func (e *LogicError) Code() int {
+func (e *LogicError) Code() any {
 	return e.code
 }
 
