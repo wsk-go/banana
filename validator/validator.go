@@ -64,6 +64,10 @@ func NewValidator() (*Validator, error) {
 
 // Struct receives any kind of type, but only performed struct or pointer to struct type.
 func (th *Validator) Struct(obj any) error {
+	return th.StructI18n(obj)
+}
+
+func (th *Validator) StructI18n(obj any, locale ...string) error {
 	value := reflect.ValueOf(obj)
 	valueType := value.Kind()
 	if valueType == reflect.Ptr {
@@ -72,28 +76,22 @@ func (th *Validator) Struct(obj any) error {
 	if valueType == reflect.Struct {
 		err := th.validate.Struct(obj)
 		if err != nil {
-			return errors.WithStack(err)
+			ve := err.(validator.ValidationErrors)
+			for _, vee := range ve {
+				if th.uTranslator != nil {
+					trans := th.findTrans(locale...)
+					message := vee.Translate(trans)
+					return errors.NewValidationError(message)
+				} else {
+					return errors.NewValidationError(vee.Error())
+				}
+			}
 		}
 	}
 	return nil
 }
 
-// TranslateFirst find the first error to translate
-func (th *Validator) TranslateFirst(ve validator.ValidationErrors, locale ...string) string {
-	for _, vee := range ve {
-		if th.uTranslator != nil {
-			trans := th.findTrans(locale...)
-
-			message := vee.Translate(trans)
-			return message
-		} else {
-			return vee.Error()
-		}
-	}
-	return ve.Error()
-}
-
-func (th *Validator) findTrans(locale ...string) locales.Translator {
+func (th *Validator) findTrans(locale ...string) ut.Translator {
 
 	if th.uTranslator == nil {
 		panic("uniTranslator is nil")
