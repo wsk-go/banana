@@ -63,39 +63,44 @@ func NewValidator() (*Validator, error) {
 }
 
 // Struct receives any kind of type, but only performed struct or pointer to struct type.
-func (th *Validator) Struct(obj any, local ...string) error {
+func (th *Validator) Struct(obj any) error {
 	value := reflect.ValueOf(obj)
 	valueType := value.Kind()
 	if valueType == reflect.Ptr {
 		valueType = value.Elem().Kind()
 	}
 	if valueType == reflect.Struct {
-		if err := th.validate.Struct(obj); err != nil {
-			ve := err.(validator.ValidationErrors)
-			for _, vee := range ve {
-				if th.uTranslator != nil {
-					var trans ut.Translator
-					var found bool
-					for _, s := range local {
-						trans, found = th.uTranslator.GetTranslator(s)
-						if found {
-							break
-						}
-					}
-
-					if !found {
-						trans = th.uTranslator.GetFallback()
-					}
-
-					message := vee.Translate(trans)
-					return errors.NewValidationError(message)
-				} else {
-					return errors.NewValidationError(vee.Error())
-				}
-			}
-		}
+		return th.validate.Struct(obj)
 	}
 	return nil
+}
+
+func (th *Validator) Translate(err error, locale ...string) error {
+	if ve, ok := err.(validator.ValidationErrors); ok {
+		for _, vee := range ve {
+			if th.uTranslator != nil {
+				var trans ut.Translator
+				var found bool
+				for _, s := range locale {
+					trans, found = th.uTranslator.GetTranslator(s)
+					if found {
+						break
+					}
+				}
+
+				if !found {
+					trans = th.uTranslator.GetFallback()
+				}
+
+				message := vee.Translate(trans)
+				return errors.NewValidationError(message)
+			} else {
+				return errors.NewValidationError(vee.Error())
+			}
+		}
+	} else {
+		return ve
+	}
 }
 
 func (th *Validator) AddTranslation(translator locales.Translator, register func(*validator.Validate, ut.Translator) error) error {
