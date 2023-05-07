@@ -62,8 +62,8 @@ func NewValidator() (*Validator, error) {
 	return v, err
 }
 
-// ValidateStruct receives any kind of type, but only performed struct or pointer to struct type.
-func (th *Validator) ValidateStruct(obj any, local ...string) error {
+// Struct receives any kind of type, but only performed struct or pointer to struct type.
+func (th *Validator) Struct(obj any, local ...string) error {
 	value := reflect.ValueOf(obj)
 	valueType := value.Kind()
 	if valueType == reflect.Ptr {
