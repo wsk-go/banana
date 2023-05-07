@@ -1,9 +1,9 @@
 package banana
 
 import (
-	"errors"
 	"fmt"
 	"github.com/JackWSK/banana/defines"
+	"github.com/JackWSK/banana/errors"
 	"github.com/JackWSK/banana/utils/stream"
 	"reflect"
 )
@@ -206,7 +206,17 @@ func (th *Banana) handleMapping() error {
 				method := controller.ReflectValue.Method(i)
 				value := method.Call(nil)[0]
 				if mapping, ok := value.Interface().(Mapping); ok {
-					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), mapping.GetHandler())
+					handler := mapping.GetHandler()
+					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), func(context defines.Context) error {
+						if len(mapping.GetRequiredQuery()) > 0 {
+							for _, key := range mapping.GetRequiredQuery() {
+								if v := context.Query(key); v == "" {
+									return errors.New(fmt.Sprintf("%s not exists in query", key))
+								}
+							}
+						}
+						return handler(context)
+					})
 				}
 			}
 		}

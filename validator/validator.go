@@ -64,7 +64,7 @@ func NewValidator() (*Validator, error) {
 
 // Struct receives any kind of type, but only performed struct or pointer to struct type.
 func (th *Validator) Struct(obj any) error {
-	return th.StructI18n(obj)
+	return th.StructWithLocale(obj)
 }
 
 func (th *Validator) StructWithLocale(obj any, locale ...string) error {
