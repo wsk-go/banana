@@ -52,6 +52,10 @@ func (th *Banana) GetBeanByName(name string) any {
 	return nil
 }
 
+func (th *Banana) RegisterInterceptors(interceptors ...defines.Interceptor) {
+
+}
+
 func (th *Banana) Import(modules ...defines.ModuleFunc) error {
 	for _, module := range modules {
 
