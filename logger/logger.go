@@ -1,29 +1,30 @@
 package logger
 
 import (
+	"github.com/JackWSK/banana/logger/field"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 )
 
-type LoggerConfig struct {
-	Level  zapcore.Level
+type Config struct {
+	Level  Level
 	Writer io.Writer
 
-	LevelWriter map[zapcore.Level]io.Writer
+	LevelWriter map[Level]io.Writer
 }
 
 type Logger struct {
 	defaultLogger  *zap.Logger
-	loggerForLevel map[zapcore.Level]*zap.Logger
+	loggerForLevel map[Level]*zap.Logger
 }
 
 // NewLogger defaultLogger 默认输出的logger
-func NewLogger(config LoggerConfig) *Logger {
+func NewLogger(config Config) *Logger {
 
 	logger := &Logger{defaultLogger: NewZapLogger(config.Level, config.Writer),
-		loggerForLevel: make(map[zapcore.Level]*zap.Logger),
+		loggerForLevel: make(map[Level]*zap.Logger),
 	}
 
 	if len(config.LevelWriter) > 0 {
@@ -37,49 +38,49 @@ func NewLogger(config LoggerConfig) *Logger {
 
 // ConfigureLoggerForLevel 配置level对应的logger
 // 如果没有找到，则使用defaultLogger
-func (th *Logger) ConfigureLoggerForLevel(level zapcore.Level, writer io.Writer) *Logger {
+func (th *Logger) ConfigureLoggerForLevel(level Level, writer io.Writer) *Logger {
 	th.loggerForLevel[level] = NewZapLogger(level, writer)
 	return th
 }
 
-func (th *Logger) Debug(msg string, fields ...zap.Field) {
-	th.determineLogger(zapcore.DebugLevel).Debug(msg, fields...)
+func (th *Logger) Debug(msg string, fields ...field.Field) {
+	th.determineLogger(DebugLevel).Debug(msg, fields...)
 }
 
-func (th *Logger) Info(msg string, fields ...zap.Field) {
-	th.determineLogger(zapcore.InfoLevel).Info(msg, fields...)
+func (th *Logger) Info(msg string, fields ...field.Field) {
+	th.determineLogger(InfoLevel).Info(msg, fields...)
 }
 
-func (th *Logger) Warn(msg string, fields ...zap.Field) {
-	th.determineLogger(zapcore.WarnLevel).Warn(msg, fields...)
+func (th *Logger) Warn(msg string, fields ...field.Field) {
+	th.determineLogger(WarnLevel).Warn(msg, fields...)
 }
 
-func (th *Logger) Error(msg string, fields ...zap.Field) {
-	th.determineLogger(zapcore.ErrorLevel).Error(msg, fields...)
+func (th *Logger) Error(msg string, fields ...field.Field) {
+	th.determineLogger(ErrorLevel).Error(msg, fields...)
 }
 
-func (th *Logger) DPanic(msg string, fields ...zap.Field) {
-	th.determineLogger(zapcore.DPanicLevel).DPanic(msg, fields...)
+func (th *Logger) DPanic(msg string, fields ...field.Field) {
+	th.determineLogger(DPanicLevel).DPanic(msg, fields...)
 }
 
-func (th *Logger) Panic(msg string, fields ...zap.Field) {
-	th.determineLogger(zapcore.PanicLevel).Panic(msg, fields...)
+func (th *Logger) Panic(msg string, fields ...field.Field) {
+	th.determineLogger(PanicLevel).Panic(msg, fields...)
 }
 
-func (th *Logger) Enabled(level zapcore.Level) bool {
+func (th *Logger) Enabled(level Level) bool {
 	l := th.determineLogger(level)
 	ce := l.Check(level, "")
 	return ce != nil
 }
 
-func (th *Logger) determineLogger(level zapcore.Level) *zap.Logger {
+func (th *Logger) determineLogger(level Level) *zap.Logger {
 	if logger, ok := th.loggerForLevel[level]; ok {
 		return logger
 	}
 	return th.defaultLogger
 }
 
-func NewZapLogger(level zapcore.Level, writer io.Writer) *zap.Logger {
+func NewZapLogger(level Level, writer io.Writer) *zap.Logger {
 	// 设置日志级别
 	atomicLevel := zap.NewAtomicLevel()
 	atomicLevel.SetLevel(level)

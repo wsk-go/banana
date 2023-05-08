@@ -10,8 +10,6 @@ import (
 	_recover "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/swagger"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-	"io"
 	"reflect"
 	"testing"
 )
@@ -133,13 +131,7 @@ func TestRegister(t *testing.T) {
 
 	testBean := &TestBean{}
 
-	err := application.Import(logger.Configuration(logger.LoggerConfig{
-		Level:  zapcore.DebugLevel,
-		Writer: logger.NewFileWriter("logger.default"),
-		LevelWriter: map[zapcore.Level]io.Writer{
-			zapcore.InfoLevel: logger.NewFileWriter("logger.info"),
-		},
-	}))
+	err := application.Import()
 
 	if err != nil {
 		t.Fatal(err)
@@ -179,13 +171,7 @@ func TestGetBean(t *testing.T) {
 		Engine: engine,
 	})
 
-	err := application.Import(logger.Configuration(logger.LoggerConfig{
-		Level:  zapcore.DebugLevel,
-		Writer: logger.NewFileWriter("logger.default"),
-		LevelWriter: map[zapcore.Level]io.Writer{
-			zapcore.InfoLevel: logger.NewFileWriter("logger.info"),
-		},
-	}))
+	err := application.Import()
 
 	if err != nil {
 		t.Fatal(err)
@@ -275,4 +261,34 @@ func TestPointer(test *testing.T) {
 	fmt.Println(hh)
 	//total = utils.ToPtr[int64](1)
 	//fmt.Println(*total)
+}
+
+type MappingTest interface {
+	GetData() any
+}
+
+type MappingTestImpl[T any] struct {
+}
+
+func (th *MappingTestImpl[T]) GetData() any {
+	var t T
+	return t
+}
+
+func TestReflect4(test *testing.T) {
+	aa := &MappingTestImpl[User]{}
+
+	print(aa)
+}
+
+func print(test any) {
+
+	tt := reflect.TypeOf(test)
+	fmt.Println(tt)
+	//reflect.TypeOf(MappingTestImpl)
+	//tt.AssignableTo()
+	if aa, ok := test.(*MappingTestImpl[any]); ok {
+		data := aa.GetData()
+		fmt.Println(data)
+	}
 }
