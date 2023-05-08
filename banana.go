@@ -17,10 +17,11 @@ type Config struct {
 }
 
 type Banana struct {
-	beans       []*defines.Bean
-	controllers []*defines.Bean
-	named       map[string]*defines.Bean
-	typed       map[reflect.Type]*defines.Bean
+	beans        []*defines.Bean
+	controllers  []*defines.Bean
+	named        map[string]*defines.Bean
+	typed        map[reflect.Type]*defines.Bean
+	interceptors []defines.Interceptor
 
 	engine defines.Engine
 }

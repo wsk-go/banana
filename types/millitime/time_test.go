@@ -67,7 +67,7 @@ func TestTime(t *testing.T) {
 	db := c.Database("test")
 	col := db.Collection("hello")
 	r, err := col.InsertOne(context.Background(), Test{
-		Hello: utils.ToPtr(NewMilliTime()),
+		Hello: utils.ToPtr(Now()),
 	})
 	if err != nil {
 		t.Fatal(err)
