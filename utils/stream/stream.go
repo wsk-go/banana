@@ -43,7 +43,7 @@ func (th *Stream[T]) DistinctByKey(keyMapper func(T) any) *Stream[T] {
 		k := keyMapper(e)
 		if !s.Contain(k) {
 			s.Add(k)
-			next.Accept(k)
+			next.Accept(e)
 		}
 	})
 	return th
