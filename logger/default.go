@@ -6,14 +6,14 @@ import (
 	"os"
 )
 
-var defaultLogger = NewLogger(Config{
+var defaultLogger = New(Config{
 	Level:       zapcore.DebugLevel,
 	Writer:      os.Stdout,
 	LevelWriter: nil,
 })
 
 func Configure(config Config) {
-	defaultLogger = NewLogger(config)
+	defaultLogger = New(config)
 }
 
 func Debug(msg string, fields ...field.Field) {

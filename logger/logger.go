@@ -20,8 +20,8 @@ type Logger struct {
 	loggerForLevel map[Level]*zap.Logger
 }
 
-// NewLogger defaultLogger 默认输出的logger
-func NewLogger(config Config) *Logger {
+// New logger
+func New(config Config) *Logger {
 
 	logger := &Logger{defaultLogger: NewZapLogger(config.Level, config.Writer),
 		loggerForLevel: make(map[Level]*zap.Logger),
