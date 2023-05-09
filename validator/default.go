@@ -16,8 +16,8 @@ func Struct(obj any) error {
 	return defaultValidator.Struct(obj)
 }
 
-func StructWithLocale(obj any, locale ...string) {
-
+func StructWithLocale(obj any, locale ...string) error {
+	return defaultValidator.StructWithLocale(obj, locale...)
 }
 
 func Default() *Validator {
