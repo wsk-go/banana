@@ -16,7 +16,7 @@ var enumTranslationText = map[string]string{
 }
 
 type StructValidator interface {
-	Struct(obj interface{}) error
+	Struct(obj any) error
 }
 
 type Validator struct {

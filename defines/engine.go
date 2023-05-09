@@ -245,16 +245,18 @@ type StructValidator interface {
 	Struct(obj any) error
 }
 
-func BodyParser[T any](ctx Context, validator ...StructValidator) (*T, error) {
+type ValidateFunc func(obj any) error
+
+func BodyParser[T any](ctx Context, fs ...ValidateFunc) (*T, error) {
 	var t T
 	err := ctx.BodyParser(&t)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(validator) > 0 {
-		for _, structValidator := range validator {
-			if err = structValidator.Struct(t); err != nil {
+	if len(fs) > 0 {
+		for _, f := range fs {
+			if err = f(t); err != nil {
 				return nil, err
 			}
 		}
@@ -263,16 +265,16 @@ func BodyParser[T any](ctx Context, validator ...StructValidator) (*T, error) {
 	return &t, err
 }
 
-func QueryParser[T any](ctx Context, validator ...StructValidator) (*T, error) {
+func QueryParser[T any](ctx Context, fs ...ValidateFunc) (*T, error) {
 	var t T
 	err := ctx.QueryParser(&t)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(validator) > 0 {
-		for _, structValidator := range validator {
-			if err = structValidator.Struct(t); err != nil {
+	if len(fs) > 0 {
+		for _, f := range fs {
+			if err = f(t); err != nil {
 				return nil, err
 			}
 		}
@@ -280,7 +282,7 @@ func QueryParser[T any](ctx Context, validator ...StructValidator) (*T, error) {
 	return &t, err
 }
 
-func ParamParser[T any](ctx Context, validator ...StructValidator) (*T, error) {
+func ParamParser[T any](ctx Context, fs ...ValidateFunc) (*T, error) {
 	var t T
 	err := ctx.ParamsParser(&t)
 
@@ -288,9 +290,9 @@ func ParamParser[T any](ctx Context, validator ...StructValidator) (*T, error) {
 		return nil, err
 	}
 
-	if len(validator) > 0 {
-		for _, structValidator := range validator {
-			if err = structValidator.Struct(t); err != nil {
+	if len(fs) > 0 {
+		for _, f := range fs {
+			if err = f(t); err != nil {
 				return nil, err
 			}
 		}
