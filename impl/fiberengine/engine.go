@@ -36,7 +36,7 @@ func (f *FiberEngine) Listen(addr string) error {
 	return f.app.Listen(addr)
 }
 
-func (f *FiberEngine) Use(middlewares ...defines.MiddlewareFunc) {
+func (f *FiberEngine) UseMiddlewareFunc(middlewares ...defines.MiddlewareFunc) {
 	for _, middleware := range middlewares {
 		f.app.Use(func(ctx *fiber.Ctx) error {
 			c := ctx.Context().Value(contextKey).(*Context)

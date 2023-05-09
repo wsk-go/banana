@@ -52,8 +52,19 @@ func (th *Banana) GetBeanByName(name string) any {
 	return nil
 }
 
-func (th *Banana) RegisterInterceptors(interceptors ...defines.Middleware) {
-	th.interceptors = append(th.interceptors, interceptors...)
+type MiddlewareFunc func(ctx defines.Context, application defines.Application) error
+
+func (th *Banana) RegisterMiddlewareFunc(fs ...MiddlewareFunc) {
+	for _, f := range fs {
+		th.engine.UseMiddlewareFunc(func(ctx defines.Context) error {
+			return f(ctx, th)
+		})
+	}
+}
+
+func (th *Banana) RegisterMiddleware(middlewares ...defines.Middleware) {
+	th.engine.UseMiddleware(middlewares...)
+	th.interceptors = append(th.interceptors, middlewares...)
 }
 
 func (th *Banana) Import(modules ...defines.ModuleFunc) error {
@@ -166,7 +177,7 @@ func (th *Banana) prepareBeans() error {
 func (th *Banana) inject(beans []*defines.Bean) error {
 
 	for _, bean := range beans {
-		err := th.InjectOne(bean)
+		err := th.injectOne(bean)
 		if err != nil {
 			return err
 		}
@@ -214,15 +225,6 @@ func (th *Banana) handleMapping() error {
 					handler := mapping.GetHandler()
 					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), func(context defines.Context) error {
 
-						defer func() {
-							_ = th.callInterceptor(context, "completion")
-						}()
-
-						err := th.callInterceptor(context, "pre")
-						if err != nil {
-							return err
-						}
-
 						if len(mapping.GetRequiredQuery()) > 0 {
 							for _, key := range mapping.GetRequiredQuery() {
 								if v := context.Query(key); v == "" {
@@ -231,12 +233,7 @@ func (th *Banana) handleMapping() error {
 							}
 						}
 
-						err = handler(context)
-						if err != nil {
-							return err
-						}
-
-						return th.callInterceptor(context, "after")
+						return handler(context)
 					})
 				}
 			}
@@ -246,43 +243,7 @@ func (th *Banana) handleMapping() error {
 	return nil
 }
 
-func (th *Banana) callInterceptor(ctx defines.Context, mode string) error {
-	if len(th.interceptors) > 0 {
-		var err error
-		for _, interceptor := range th.interceptors {
-
-			switch mode {
-			case "pre":
-				err = interceptor.Pre(ctx)
-			case "after":
-				err = interceptor.After(ctx)
-			case "completion":
-				interceptor.Completion(ctx)
-			}
-
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-//func (th *Banana) callInterceptors(ctx defines.Context, interceptor defines.Middleware) error {
-//
-//	//for _, interceptor := range th.interceptors {
-//	//	var nextInterceptor = func() {}
-//	//	err := interceptor.Handle(ctx, func(ctx defines.Context) error {
-//	//
-//	//	})
-//	//	if err != nil {
-//	//		return err
-//	//	}
-//	//}
-//}
-
-func (th *Banana) InjectOne(b *defines.Bean) error {
+func (th *Banana) injectOne(b *defines.Bean) error {
 	for i := 0; i < b.ReflectValue.Elem().NumField(); i++ {
 		field := b.ReflectValue.Elem().Field(i)
 		fieldType := field.Type()
