@@ -1,4 +1,4 @@
-package defines
+package hook
 
 type BeanLoaded interface {
 	Loaded()

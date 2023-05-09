@@ -1,21 +1,20 @@
 package banana
 
 import (
-	"github.com/JackWSK/banana/defines"
 	"net/http"
 )
 
 type Mapping interface {
 	GetMethod() string
 	GetPath() string
-	GetHandler() defines.Handler
+	GetHandler() Handler
 	GetRequiredQuery() []string
 }
 
 type RequestMapping struct {
 	Method        string
 	Path          string
-	Handler       defines.Handler
+	Handler       Handler
 	RequiredQuery []string
 }
 
@@ -27,7 +26,7 @@ func (th RequestMapping) GetPath() string {
 	return th.Path
 }
 
-func (th RequestMapping) GetHandler() defines.Handler {
+func (th RequestMapping) GetHandler() Handler {
 	return th.Handler
 }
 
@@ -37,7 +36,7 @@ func (th RequestMapping) GetRequiredQuery() []string {
 
 type GetMapping struct {
 	Path          string
-	Handler       defines.Handler
+	Handler       Handler
 	RequiredQuery []string
 }
 
@@ -49,7 +48,7 @@ func (th GetMapping) GetPath() string {
 	return th.Path
 }
 
-func (th GetMapping) GetHandler() defines.Handler {
+func (th GetMapping) GetHandler() Handler {
 	return th.Handler
 }
 
@@ -59,7 +58,7 @@ func (th GetMapping) GetRequiredQuery() []string {
 
 type PostMapping struct {
 	Path          string
-	Handler       defines.Handler
+	Handler       Handler
 	RequiredQuery []string
 }
 
@@ -71,7 +70,7 @@ func (th PostMapping) GetPath() string {
 	return th.Path
 }
 
-func (th PostMapping) GetHandler() defines.Handler {
+func (th PostMapping) GetHandler() Handler {
 	return th.Handler
 }
 
@@ -81,7 +80,7 @@ func (th PostMapping) GetRequiredQuery() []string {
 
 type PutMapping struct {
 	Path          string
-	Handler       defines.Handler
+	Handler       Handler
 	RequiredQuery []string
 }
 
@@ -93,7 +92,7 @@ func (th PutMapping) GetPath() string {
 	return th.Path
 }
 
-func (th PutMapping) GetHandler() defines.Handler {
+func (th PutMapping) GetHandler() Handler {
 	return th.Handler
 }
 
@@ -103,7 +102,7 @@ func (th PutMapping) GetRequiredQuery() []string {
 
 type DeleteMapping struct {
 	Path          string
-	Handler       defines.Handler
+	Handler       Handler
 	RequiredQuery []string
 }
 
@@ -115,7 +114,7 @@ func (th DeleteMapping) GetPath() string {
 	return th.Path
 }
 
-func (th DeleteMapping) GetHandler() defines.Handler {
+func (th DeleteMapping) GetHandler() Handler {
 	return th.Handler
 }
 

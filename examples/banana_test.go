@@ -1,8 +1,8 @@
-package banana
+package examples
 
 import (
 	"fmt"
-	"github.com/JackWSK/banana/defines"
+	"github.com/JackWSK/banana"
 	"github.com/JackWSK/banana/impl/fiberengine"
 	"github.com/JackWSK/banana/logger"
 	"github.com/gofiber/fiber/v2"
@@ -25,11 +25,11 @@ func (u *UserRegister) UserService(Logger *logger.Logger) (*User2, string, error
 	return &User2{}, "", nil
 }
 
-func (u *UserRegister) Configuration() defines.ModuleFunc {
-	return func(application defines.Application) (*defines.Configuration, error) {
-		return &defines.Configuration{
+func (u *UserRegister) Configuration() banana.ConfigurationFunc {
+	return func(application banana.Application) (*banana.Configuration, error) {
+		return &banana.Configuration{
 			Controllers: nil,
-			Beans: []*defines.Bean{
+			Beans: []*banana.Bean{
 				{
 					Value: &User2{Name: "aaa"},
 				},
@@ -41,20 +41,20 @@ func (u *UserRegister) Configuration() defines.ModuleFunc {
 type UserController struct {
 }
 
-func (th *UserController) HelloWorld() Mapping {
-	return GetMapping{
+func (th *UserController) HelloWorld() banana.Mapping {
+	return banana.GetMapping{
 		Path: "/hello",
-		Handler: func(ctx defines.Context) error {
+		Handler: func(ctx banana.Context) error {
 
 			return ctx.JSON(fiber.Map{"msg": "success"})
 		},
 	}
 }
 
-func (th *UserController) HelloWorld2() Mapping {
-	return GetMapping{
+func (th *UserController) HelloWorld2() banana.Mapping {
+	return banana.GetMapping{
 		Path: "/hello2",
-		Handler: func(ctx defines.Context) error {
+		Handler: func(ctx banana.Context) error {
 			return ctx.JSON(fiber.Map{"msg": "success"})
 		},
 	}
@@ -122,7 +122,7 @@ func TestRegister(t *testing.T) {
 		},
 	}))
 
-	var application = New(Config{
+	var application = banana.New(banana.Config{
 		Engine: engine,
 	})
 
@@ -134,20 +134,20 @@ func TestRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = application.RegisterBean(&defines.Bean{
+	err = application.RegisterBean(&banana.Bean{
 		Value: testBean,
-	}, &defines.Bean{
+	}, &banana.Bean{
 		Value: &User{Name: "user"},
-	}, &defines.Bean{
+	}, &banana.Bean{
 		Value: &User{Name: "user2"},
 		Name:  "user2",
-	}, &defines.Bean{Value: &UserRegister{}})
+	}, &banana.Bean{Value: &UserRegister{}})
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = application.RegisterController(&defines.Bean{
+	err = application.RegisterController(&banana.Bean{
 		Value: &UserController{},
 	})
 
@@ -164,7 +164,7 @@ func TestRegister(t *testing.T) {
 
 func TestGetBean(t *testing.T) {
 	engine := fiberengine.New()
-	var application = New(Config{
+	var application = banana.New(banana.Config{
 		Engine: engine,
 	})
 
@@ -174,7 +174,7 @@ func TestGetBean(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = application.RegisterController(&defines.Bean{
+	err = application.RegisterController(&banana.Bean{
 		Value: &UserController{},
 	})
 
@@ -182,10 +182,10 @@ func TestGetBean(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c, _ := GetBeanByType[*UserController](application)
+	c, _ := banana.GetBeanByType[*UserController](application)
 	fmt.Println(c)
 
-	cc := MustGetBeanByName[*User](application, "aaa")
+	cc := banana.MustGetBeanByName[*User](application, "aaa")
 	fmt.Println(cc)
 	err = application.Run("0.0.0.0:9222")
 	if err != nil {
@@ -197,21 +197,22 @@ type MyMiddleware struct {
 	UserController *UserController `inject:""`
 }
 
-func (th *MyMiddleware) Handle(ctx defines.Context, application *Banana) error {
+func (th *MyMiddleware) Handle(ctx banana.Context, application *banana.Banana) error {
 	fmt.Println(th.UserController)
 	return ctx.Next()
 }
 
 func TestMiddleware(t *testing.T) {
-	engine := fiberengine.New()
-	var application = New(Config{
-		Engine: engine,
+	e := fiberengine.New()
+	var application = banana.New(banana.Config{
+		Engine: e,
 	})
 	var err error
 
-	application.Use(func(ctx defines.Context, application *Banana) error {
-		c := MustGetBeanByType[*UserController](application)
+	application.Use(func(ctx banana.Context, application *banana.Banana) error {
+		c := banana.MustGetBeanByType[*UserController](application)
 		fmt.Println(c)
+
 		return ctx.Next()
 	})
 
@@ -220,7 +221,7 @@ func TestMiddleware(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = application.RegisterController(&defines.Bean{
+	err = application.RegisterController(&banana.Bean{
 		Value: &UserController{},
 	})
 
@@ -239,7 +240,7 @@ func TestReflect(t *testing.T) {
 	m := u.Method(0)
 
 	tt := m.Type.Out(0)
-	fmt.Println(reflect.TypeOf((*Mapping)(nil)).Elem().AssignableTo(tt))
+	fmt.Println(reflect.TypeOf((*banana.Mapping)(nil)).Elem().AssignableTo(tt))
 }
 
 func TestReflect2(t *testing.T) {

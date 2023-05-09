@@ -50,5 +50,6 @@ func TestValidator(t *testing.T) {
 	}
 
 	err = validator.Struct(user)
+
 	fmt.Printf("%+v", err)
 }

@@ -1,15 +1,17 @@
 package validator
 
-import "github.com/JackWSK/banana/defines"
+import (
+	"github.com/JackWSK/banana"
+)
 
-func Configuration() defines.ModuleFunc {
-	return func(application defines.Application) (*defines.Configuration, error) {
+func Configuration() banana.ConfigurationFunc {
+	return func(application banana.Application) (*banana.Configuration, error) {
 		validator, err := NewValidator()
 		if err != nil {
 			panic(err)
 		}
-		return &defines.Configuration{
-			Beans: []*defines.Bean{
+		return &banana.Configuration{
+			Beans: []*banana.Bean{
 				{
 					Value: validator,
 					Name:  "",

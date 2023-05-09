@@ -1,7 +1,7 @@
 package fiberengine
 
 import (
-	"github.com/JackWSK/banana/defines"
+	"github.com/JackWSK/banana"
 	"github.com/gofiber/fiber/v2"
 	_recover "github.com/gofiber/fiber/v2/middleware/recover"
 	"mime/multipart"
@@ -39,7 +39,7 @@ func (f *FiberEngine) Listen(addr string) error {
 	return f.app.Listen(addr)
 }
 
-func (f *FiberEngine) Use(middlewares ...defines.MiddlewareFunc) {
+func (f *FiberEngine) Use(middlewares ...banana.EngineMiddlewareFunc) {
 	for _, middleware := range middlewares {
 		f.app.Use(func(ctx *fiber.Ctx) error {
 			c := ctx.Context().Value(contextKey).(*Context)
@@ -48,7 +48,7 @@ func (f *FiberEngine) Use(middlewares ...defines.MiddlewareFunc) {
 	}
 }
 
-func (f *FiberEngine) Add(method, path string, handler defines.Handler) {
+func (f *FiberEngine) Add(method, path string, handler banana.Handler) {
 	f.app.Add(method, path, func(ctx *fiber.Ctx) error {
 		c := ctx.Context().Value(contextKey).(*Context)
 		return handler(c)
@@ -139,7 +139,7 @@ func (c *Context) Cookies(key string, defaultValue ...string) string {
 	return c.ctx.Cookies(key, defaultValue...)
 }
 
-func (c *Context) Cookie(cookie *defines.Cookie) {
+func (c *Context) Cookie(cookie *banana.Cookie) {
 	c.ctx.Cookie(&fiber.Cookie{
 		Name:        cookie.Name,
 		Value:       cookie.Value,

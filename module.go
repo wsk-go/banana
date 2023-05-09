@@ -1,13 +1,15 @@
-package defines
+package banana
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type Application interface {
 	GetBeanByType(t reflect.Type) any
 	GetBeanByName(name string) any
 }
 
-type ModuleFunc func(Application) (*Configuration, error)
+type ConfigurationFunc func(Application) (*Configuration, error)
 
 type Configuration struct {
 	Controllers []*Bean

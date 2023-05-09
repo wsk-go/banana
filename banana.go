@@ -2,8 +2,8 @@ package banana
 
 import (
 	"fmt"
-	"github.com/JackWSK/banana/defines"
 	"github.com/JackWSK/banana/errors"
+	"github.com/JackWSK/banana/hook"
 	"github.com/JackWSK/banana/utils/stream"
 	"reflect"
 )
@@ -13,22 +13,22 @@ type MethodMapping struct {
 }
 
 type Config struct {
-	Engine defines.Engine
+	Engine Engine
 }
 
-type MiddlewareFunc func(ctx defines.Context, application *Banana) error
+type MiddlewareFunc func(ctx Context, application *Banana) error
 
 type Middleware interface {
-	Handle(ctx defines.Context, application *Banana) error
+	Handle(ctx Context, application *Banana) error
 }
 
 type Banana struct {
-	beans       []*defines.Bean
-	controllers []*defines.Bean
-	named       map[string]*defines.Bean
-	typed       map[reflect.Type]*defines.Bean
+	beans       []*Bean
+	controllers []*Bean
+	named       map[string]*Bean
+	typed       map[reflect.Type]*Bean
 
-	engine defines.Engine
+	engine Engine
 }
 
 func New(config Config) *Banana {
@@ -37,7 +37,7 @@ func New(config Config) *Banana {
 	}
 }
 
-func (th *Banana) Engine() defines.Engine {
+func (th *Banana) Engine() Engine {
 	return th.engine
 }
 
@@ -59,7 +59,7 @@ func (th *Banana) GetBeanByName(name string) any {
 
 func (th *Banana) Use(fs ...MiddlewareFunc) {
 	for _, f := range fs {
-		th.engine.Use(func(ctx defines.Context) error {
+		th.engine.Use(func(ctx Context) error {
 			return f(ctx, th)
 		})
 	}
@@ -67,13 +67,13 @@ func (th *Banana) Use(fs ...MiddlewareFunc) {
 
 func (th *Banana) RegisterMiddleware(middlewares ...Middleware) error {
 	for _, middleware := range middlewares {
-		th.engine.Use(func(ctx defines.Context) error {
+		th.engine.Use(func(ctx Context) error {
 			return middleware.Handle(ctx, th)
 		})
 	}
 	// convert to beans and register
-	beans := stream.Map(stream.Of(middlewares), func(in Middleware) *defines.Bean {
-		return &defines.Bean{
+	beans := stream.Map(stream.Of(middlewares), func(in Middleware) *Bean {
+		return &Bean{
 			Value: in,
 			Name:  "",
 		}
@@ -81,7 +81,7 @@ func (th *Banana) RegisterMiddleware(middlewares ...Middleware) error {
 	return th.RegisterBean(beans...)
 }
 
-func (th *Banana) Import(modules ...defines.ModuleFunc) error {
+func (th *Banana) Import(modules ...ConfigurationFunc) error {
 	for _, module := range modules {
 
 		configuration, err := module(th)
@@ -107,7 +107,7 @@ func (th *Banana) Import(modules ...defines.ModuleFunc) error {
 	return nil
 }
 
-func (th *Banana) RegisterController(beans ...*defines.Bean) error {
+func (th *Banana) RegisterController(beans ...*Bean) error {
 	err := th.RegisterBean(beans...)
 	if err != nil {
 		return err
@@ -117,14 +117,14 @@ func (th *Banana) RegisterController(beans ...*defines.Bean) error {
 }
 
 // RegisterBean register object
-func (th *Banana) RegisterBean(beans ...*defines.Bean) error {
+func (th *Banana) RegisterBean(beans ...*Bean) error {
 
 	if th.named == nil {
-		th.named = make(map[string]*defines.Bean)
+		th.named = make(map[string]*Bean)
 	}
 
 	if th.typed == nil {
-		th.typed = make(map[reflect.Type]*defines.Bean)
+		th.typed = make(map[reflect.Type]*Bean)
 	}
 
 	for _, bean := range beans {
@@ -172,7 +172,7 @@ func (th *Banana) Run(addr string) error {
 }
 
 func (th *Banana) prepareBeans() error {
-	beans := stream.Of(th.beans).Filter(func(bean *defines.Bean) bool {
+	beans := stream.Of(th.beans).Filter(func(bean *Bean) bool {
 		return bean.Injected == false
 	}).ToList()
 
@@ -188,7 +188,7 @@ func (th *Banana) prepareBeans() error {
 	return nil
 }
 
-func (th *Banana) inject(beans []*defines.Bean) error {
+func (th *Banana) inject(beans []*Bean) error {
 
 	for _, bean := range beans {
 		err := th.injectOne(bean)
@@ -201,11 +201,11 @@ func (th *Banana) inject(beans []*defines.Bean) error {
 	return nil
 }
 
-func (th *Banana) callHook(beans []*defines.Bean) error {
+func (th *Banana) callHook(beans []*Bean) error {
 
-	var configurations []defines.ModuleFunc
+	var configurations []ConfigurationFunc
 	for _, b := range beans {
-		if setup, ok := b.Value.(defines.BeanLoaded); ok {
+		if setup, ok := b.Value.(hook.BeanLoaded); ok {
 			setup.Loaded()
 		}
 
@@ -237,7 +237,7 @@ func (th *Banana) handleMapping() error {
 				value := method.Call(nil)[0]
 				if mapping, ok := value.Interface().(Mapping); ok {
 					handler := mapping.GetHandler()
-					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), func(context defines.Context) error {
+					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), func(context Context) error {
 
 						if len(mapping.GetRequiredQuery()) > 0 {
 							for _, key := range mapping.GetRequiredQuery() {
@@ -257,7 +257,7 @@ func (th *Banana) handleMapping() error {
 	return nil
 }
 
-func (th *Banana) injectOne(b *defines.Bean) error {
+func (th *Banana) injectOne(b *Bean) error {
 	for i := 0; i < b.ReflectValue.Elem().NumField(); i++ {
 		field := b.ReflectValue.Elem().Field(i)
 		fieldType := field.Type()
@@ -288,7 +288,7 @@ func (th *Banana) injectOne(b *defines.Bean) error {
 			)
 		}
 
-		var injectBean *defines.Bean
+		var injectBean *Bean
 		if tag.Name == "" {
 			if ib, ok := th.typed[fieldType]; ok {
 				injectBean = ib
@@ -317,14 +317,14 @@ func (th *Banana) injectOne(b *defines.Bean) error {
 	return nil
 }
 
-func MustGetBeanByType[T any](application defines.Application) T {
+func MustGetBeanByType[T any](application Application) T {
 	if v, ok := GetBeanByType[T](application); ok {
 		return v
 	}
 	panic(errors.New(fmt.Sprintf("%T bean not found", *new(T))))
 }
 
-func GetBeanByType[T any](application defines.Application) (T, bool) {
+func GetBeanByType[T any](application Application) (T, bool) {
 	var t T
 	if v := application.GetBeanByType(reflect.TypeOf(t)); v != nil {
 		return v.(T), true
@@ -332,7 +332,7 @@ func GetBeanByType[T any](application defines.Application) (T, bool) {
 	return t, false
 }
 
-func MustGetBeanByName[T any](application defines.Application, name string) T {
+func MustGetBeanByName[T any](application Application, name string) T {
 	if v, ok := GetBeanByName[T](application, name); ok {
 		return v
 	}
@@ -340,7 +340,7 @@ func MustGetBeanByName[T any](application defines.Application, name string) T {
 	panic(errors.New(fmt.Sprintf("bean with name [%s] not found", name)))
 }
 
-func GetBeanByName[T any](application defines.Application, name string) (T, bool) {
+func GetBeanByName[T any](application Application, name string) (T, bool) {
 	var t T
 	if v := application.GetBeanByName(name); v != nil {
 		if v2, ok := v.(T); ok {
