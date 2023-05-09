@@ -194,10 +194,12 @@ func TestGetBean(t *testing.T) {
 }
 
 type MyMiddleware struct {
+	UserController *UserController `inject:""`
 }
 
-func (m *MyMiddleware) Handle(ctx defines.Context) error {
-
+func (th *MyMiddleware) Handle(ctx defines.Context, application *Banana) error {
+	fmt.Println(th.UserController)
+	return ctx.Next()
 }
 
 func TestMiddleware(t *testing.T) {
@@ -207,11 +209,16 @@ func TestMiddleware(t *testing.T) {
 	})
 	var err error
 
-	application.Use(func(ctx defines.Context, application defines.Application) error {
+	application.Use(func(ctx defines.Context, application *Banana) error {
 		c := MustGetBeanByType[*UserController](application)
 		fmt.Println(c)
 		return ctx.Next()
 	})
+
+	err = application.RegisterMiddleware(&MyMiddleware{})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	err = application.RegisterController(&defines.Bean{
 		Value: &UserController{},

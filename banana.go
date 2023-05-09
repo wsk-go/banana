@@ -16,10 +16,10 @@ type Config struct {
 	Engine defines.Engine
 }
 
-type MiddlewareFunc func(ctx defines.Context, application defines.Application) error
+type MiddlewareFunc func(ctx defines.Context, application *Banana) error
 
 type Middleware interface {
-	Handle(ctx defines.Context, application defines.Application) error
+	Handle(ctx defines.Context, application *Banana) error
 }
 
 type Banana struct {
@@ -27,7 +27,6 @@ type Banana struct {
 	controllers []*defines.Bean
 	named       map[string]*defines.Bean
 	typed       map[reflect.Type]*defines.Bean
-	middlewares []Middleware
 
 	engine defines.Engine
 }
@@ -66,14 +65,20 @@ func (th *Banana) Use(fs ...MiddlewareFunc) {
 	}
 }
 
-func (th *Banana) RegisterMiddleware(middlewares ...Middleware) {
+func (th *Banana) RegisterMiddleware(middlewares ...Middleware) error {
 	for _, middleware := range middlewares {
 		th.engine.Use(func(ctx defines.Context) error {
 			return middleware.Handle(ctx, th)
 		})
 	}
-
-	th.middlewares = append(th.middlewares, middlewares...)
+	// convert to beans and register
+	beans := stream.Map(stream.Of(middlewares), func(in Middleware) *defines.Bean {
+		return &defines.Bean{
+			Value: in,
+			Name:  "",
+		}
+	})
+	return th.RegisterBean(beans...)
 }
 
 func (th *Banana) Import(modules ...defines.ModuleFunc) error {
