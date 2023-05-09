@@ -2,19 +2,76 @@ package set
 
 import "sync"
 
-type Set[V comparable] struct {
-	m map[V]struct{}
-	l sync.RWMutex
+type Set[V comparable] interface {
+	Add(v ...V)
+
+	Remove(v V)
+
+	Contain(v V) bool
+
+	Iter(f func(V))
+
+	Size() int
 }
 
-func New[V comparable]() *Set[V] {
+type UnsafeSet[V comparable] struct {
+	m map[V]struct{}
+}
+
+func New[V comparable]() Set[V] {
 	m := make(map[V]struct{})
-	return &Set[V]{
+	return &UnsafeSet[V]{
 		m: m,
 	}
 }
 
-func (th *Set[V]) Add(v ...V) {
+func (th *UnsafeSet[V]) Add(v ...V) {
+	for _, vv := range v {
+		if !th.contain(vv) {
+			th.m[vv] = struct{}{}
+		}
+	}
+}
+
+func (th *UnsafeSet[V]) Remove(v V) {
+	if th.contain(v) {
+		delete(th.m, v)
+	}
+}
+
+func (th *UnsafeSet[V]) Contain(v V) bool {
+	return th.contain(v)
+}
+
+func (th *UnsafeSet[V]) Iter(f func(V)) {
+	for k, _ := range th.m {
+		f(k)
+	}
+}
+
+func (th *UnsafeSet[V]) Size() int {
+	return len(th.m)
+}
+
+func (th *UnsafeSet[V]) contain(v V) bool {
+	_, ok := th.m[v]
+	return ok
+}
+
+// SafeSet Thread Safe
+type SafeSet[V comparable] struct {
+	m map[V]struct{}
+	l sync.RWMutex
+}
+
+func NewSafe[V comparable]() Set[V] {
+	m := make(map[V]struct{})
+	return &SafeSet[V]{
+		m: m,
+	}
+}
+
+func (th *SafeSet[V]) Add(v ...V) {
 	th.l.Lock()
 	defer th.l.Unlock()
 	for _, vv := range v {
@@ -24,7 +81,7 @@ func (th *Set[V]) Add(v ...V) {
 	}
 }
 
-func (th *Set[V]) Remove(v V) {
+func (th *SafeSet[V]) Remove(v V) {
 	th.l.Lock()
 	defer th.l.Unlock()
 	if th.contain(v) {
@@ -32,13 +89,13 @@ func (th *Set[V]) Remove(v V) {
 	}
 }
 
-func (th *Set[V]) Contain(v V) bool {
+func (th *SafeSet[V]) Contain(v V) bool {
 	th.l.RLock()
 	defer th.l.RUnlock()
 	return th.contain(v)
 }
 
-func (th *Set[V]) Iter(f func(V)) {
+func (th *SafeSet[V]) Iter(f func(V)) {
 	th.l.RLock()
 	defer th.l.RUnlock()
 	for k, _ := range th.m {
@@ -46,11 +103,11 @@ func (th *Set[V]) Iter(f func(V)) {
 	}
 }
 
-func (th *Set[V]) Size() int {
+func (th *SafeSet[V]) Size() int {
 	return len(th.m)
 }
 
-func (th *Set[V]) contain(v V) bool {
+func (th *SafeSet[V]) contain(v V) bool {
 	_, ok := th.m[v]
 	return ok
 }
