@@ -10,11 +10,11 @@ type Bean struct {
 	Name string
 
 	// type
-	ReflectType reflect.Type
+	reflectType reflect.Type
 
 	// value
-	ReflectValue reflect.Value
+	reflectValue reflect.Value
 
 	// has injected
-	Injected bool
+	injected bool
 }

@@ -147,8 +147,8 @@ func (th *Banana) RegisterBean(beans ...*Bean) error {
 			th.named[bean.Name] = bean
 		}
 
-		bean.ReflectValue = reflectValue
-		bean.ReflectType = reflectType
+		bean.reflectValue = reflectValue
+		bean.reflectType = reflectType
 		th.beans = append(th.beans, bean)
 	}
 
@@ -173,7 +173,7 @@ func (th *Banana) Run(addr string) error {
 
 func (th *Banana) prepareBeans() error {
 	beans := stream.Of(th.beans).Filter(func(bean *Bean) bool {
-		return bean.Injected == false
+		return bean.injected == false
 	}).ToList()
 
 	err := th.inject(beans)
@@ -195,7 +195,7 @@ func (th *Banana) inject(beans []*Bean) error {
 		if err != nil {
 			return err
 		}
-		bean.Injected = true
+		bean.injected = true
 	}
 
 	return nil
@@ -231,9 +231,9 @@ func (th *Banana) callHook(beans []*Bean) error {
 
 func (th *Banana) handleMapping() error {
 	for _, controller := range th.controllers {
-		for i := 0; i < controller.ReflectType.NumMethod(); i++ {
-			if isMappingMethod(controller.ReflectType.Method(i)) {
-				method := controller.ReflectValue.Method(i)
+		for i := 0; i < controller.reflectType.NumMethod(); i++ {
+			if isMappingMethod(controller.reflectType.Method(i)) {
+				method := controller.reflectValue.Method(i)
 				value := method.Call(nil)[0]
 				if mapping, ok := value.Interface().(Mapping); ok {
 					handler := mapping.GetHandler()
@@ -258,19 +258,19 @@ func (th *Banana) handleMapping() error {
 }
 
 func (th *Banana) injectOne(b *Bean) error {
-	for i := 0; i < b.ReflectValue.Elem().NumField(); i++ {
-		field := b.ReflectValue.Elem().Field(i)
+	for i := 0; i < b.reflectValue.Elem().NumField(); i++ {
+		field := b.reflectValue.Elem().Field(i)
 		fieldType := field.Type()
-		fieldTag := b.ReflectType.Elem().Field(i).Tag
-		//fieldName := bean.ReflectType.Elem().Field(i).Name
+		fieldTag := b.reflectType.Elem().Field(i).Tag
+		//fieldName := bean.reflectType.Elem().Field(i).Name
 		tag, err := parseTag(fieldTag)
 
 		if err != nil {
 			return fmt.Errorf(
 				"unexpected tag format `%s` for field %s in type %s",
 				string(fieldTag),
-				b.ReflectType.Elem().Field(i).Name,
-				b.ReflectType,
+				b.reflectType.Elem().Field(i).Name,
+				b.reflectType,
 			)
 		}
 
@@ -283,8 +283,8 @@ func (th *Banana) injectOne(b *Bean) error {
 		if !field.CanSet() {
 			return fmt.Errorf(
 				"inject requested on unexported field %s in type %s",
-				b.ReflectType.Elem().Field(i).Name,
-				b.ReflectType,
+				b.reflectType.Elem().Field(i).Name,
+				b.reflectType,
 			)
 		}
 
@@ -295,8 +295,8 @@ func (th *Banana) injectOne(b *Bean) error {
 			} else {
 				return fmt.Errorf(
 					"inject bean not found for field %s in type %s",
-					b.ReflectType.Elem().Field(i).Name,
-					b.ReflectType,
+					b.reflectType.Elem().Field(i).Name,
+					b.reflectType,
 				)
 			}
 		} else {
@@ -305,13 +305,13 @@ func (th *Banana) injectOne(b *Bean) error {
 			} else {
 				return fmt.Errorf(
 					"inject bean not found for field %s in name %s",
-					b.ReflectType.Elem().Field(i).Name,
-					b.ReflectType,
+					b.reflectType.Elem().Field(i).Name,
+					b.reflectType,
 				)
 			}
 		}
 
-		field.Set(injectBean.ReflectValue)
+		field.Set(injectBean.reflectValue)
 	}
 
 	return nil
