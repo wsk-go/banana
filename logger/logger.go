@@ -4,7 +4,6 @@ import (
 	"github.com/JackWSK/banana/logger/field"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 )
 
@@ -36,8 +35,7 @@ func New(config Config) *Logger {
 	return logger
 }
 
-// ConfigureLoggerForLevel 配置level对应的logger
-// 如果没有找到，则使用defaultLogger
+// ConfigureLoggerForLevel config level for each logger
 func (th *Logger) ConfigureLoggerForLevel(level Level, writer io.Writer) *Logger {
 	th.loggerForLevel[level] = NewZapLogger(level, writer)
 	return th
@@ -110,12 +108,14 @@ func NewZapLogger(level Level, writer io.Writer) *zap.Logger {
 	return zap.New(core)
 }
 
-func NewFileWriter(filename string) io.Writer {
-	return &lumberjack.Logger{
-		Filename:   filename, // 日志文件路径
-		MaxSize:    256,      // 每个日志文件保存的最大尺寸 单位：M
-		MaxBackups: 30,       // 日志文件最多保存多少个备份
-		MaxAge:     7,        // 文件最多保存多少天
-		Compress:   false,    // 是否压缩
-	}
-}
+//type FilterWriter = lumberjack.Logger
+//
+//func NewFileWriter(filename string) io.Writer {
+//	return &lumberjack.Logger{
+//		Filename:   filename, // 日志文件路径
+//		MaxSize:    256,      // 每个日志文件保存的最大尺寸 单位：M
+//		MaxBackups: 30,       // 日志文件最多保存多少个备份
+//		MaxAge:     7,        // 文件最多保存多少天
+//		Compress:   false,    // 是否压缩
+//	}
+//}
