@@ -1,5 +1,7 @@
 package stream
 
+import "github.com/JackWSK/banana/types/set"
+
 type pipeline[T any] struct {
 	next   *pipeline[T]
 	accept func(e T, next *pipeline[T])
@@ -19,6 +21,29 @@ func (th *Stream[T]) Filter(filter func(T) bool) *Stream[T] {
 	th.addPipeline(func(e T, next *pipeline[T]) {
 		if filter(e) {
 			next.Accept(e)
+		}
+	})
+	return th
+}
+
+func (th *Stream[T]) Distinct() *Stream[T] {
+	s := set.New[any]()
+	th.addPipeline(func(e T, next *pipeline[T]) {
+		if !s.Contain(e) {
+			s.Add(e)
+			next.Accept(e)
+		}
+	})
+	return th
+}
+
+func (th *Stream[T]) DistinctByKey(keyMapper func(T) any) *Stream[T] {
+	s := set.New[any]()
+	th.addPipeline(func(e T, next *pipeline[T]) {
+		k := keyMapper(e)
+		if !s.Contain(k) {
+			s.Add(k)
+			next.Accept(k)
 		}
 	})
 	return th
