@@ -11,7 +11,6 @@ require (
 	github.com/swaggo/swag v1.16.1
 	go.mongodb.org/mongo-driver v1.11.4
 	go.uber.org/zap v1.24.0
-	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (
