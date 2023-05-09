@@ -15,10 +15,6 @@ var enumTranslationText = map[string]string{
 	"zh": "{0} 不合法!",
 }
 
-type StructValidator interface {
-	Struct(obj any) error
-}
-
 type Validator struct {
 	validate    *validator.Validate
 	uTranslator *ut.UniversalTranslator
