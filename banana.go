@@ -53,7 +53,7 @@ func (th *Banana) GetBeanByName(name string) any {
 }
 
 func (th *Banana) RegisterInterceptors(interceptors ...defines.Interceptor) {
-
+	th.interceptors = append(th.interceptors, interceptors...)
 }
 
 func (th *Banana) Import(modules ...defines.ModuleFunc) error {
@@ -61,9 +61,9 @@ func (th *Banana) Import(modules ...defines.ModuleFunc) error {
 
 		configuration, err := module(th)
 		if err != nil {
+
 			return err
 		}
-
 		if len(configuration.Beans) > 0 {
 			err := th.RegisterBean(configuration.Beans...)
 			if err != nil {
@@ -213,6 +213,16 @@ func (th *Banana) handleMapping() error {
 				if mapping, ok := value.Interface().(Mapping); ok {
 					handler := mapping.GetHandler()
 					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), func(context defines.Context) error {
+
+						defer func() {
+							_ = th.callInterceptor(context, "completion")
+						}()
+
+						err := th.callInterceptor(context, "pre")
+						if err != nil {
+							return err
+						}
+
 						if len(mapping.GetRequiredQuery()) > 0 {
 							for _, key := range mapping.GetRequiredQuery() {
 								if v := context.Query(key); v == "" {
@@ -220,9 +230,38 @@ func (th *Banana) handleMapping() error {
 								}
 							}
 						}
-						return handler(context)
+
+						err = handler(context)
+						if err != nil {
+							return err
+						}
+
+						return th.callInterceptor(context, "after")
 					})
 				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func (th *Banana) callInterceptor(ctx defines.Context, mode string) error {
+	if len(th.interceptors) > 0 {
+		var err error
+		for _, interceptor := range th.interceptors {
+
+			switch mode {
+			case "pre":
+				err = interceptor.Pre(ctx)
+			case "after":
+				err = interceptor.After(ctx)
+			case "completion":
+				interceptor.Completion(ctx)
+			}
+
+			if err != nil {
+				return err
 			}
 		}
 	}
