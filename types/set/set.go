@@ -46,6 +46,10 @@ func (th *Set[V]) Iter(f func(V)) {
 	}
 }
 
+func (th *Set[V]) Size() int {
+	return len(th.m)
+}
+
 func (th *Set[V]) contain(v V) bool {
 	_, ok := th.m[v]
 	return ok
