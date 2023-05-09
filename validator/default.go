@@ -9,7 +9,7 @@ import (
 var defaultValidator, _ = NewValidator()
 
 func AddTranslation(translator locales.Translator, register func(*validator.Validate, ut.Translator) error) error {
-	return defaultValidator.AddTranslation(translator, register)
+	return defaultValidator.addTranslation(translator, register)
 }
 
 func Struct(obj any) error {

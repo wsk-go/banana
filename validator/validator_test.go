@@ -35,21 +35,21 @@ func TestValidator(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = validator.AddTranslation(zh.New(), zhtranslations.RegisterDefaultTranslations)
+	err = validator.addTranslation(zh.New(), zhtranslations.RegisterDefaultTranslations)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = validator.AddTranslation(en.New(), entranslations.RegisterDefaultTranslations)
+	err = validator.addTranslation(en.New(), entranslations.RegisterDefaultTranslations)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	var user = User{
-		Name: "jack",
+		//Name: "jack",
 	}
 
-	err = validator.Struct(user)
+	err = validator.StructWithLocale(user, "zh")
 
 	fmt.Printf("%+v", err)
 }

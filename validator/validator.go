@@ -4,9 +4,11 @@ import (
 	"github.com/JackWSK/banana/errors"
 	"github.com/go-playground/locales"
 	"github.com/go-playground/locales/en"
+	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	entranslations "github.com/go-playground/validator/v10/translations/en"
+	zhtranslations "github.com/go-playground/validator/v10/translations/zh"
 	"reflect"
 )
 
@@ -54,7 +56,19 @@ func NewValidator() (*Validator, error) {
 	})
 
 	v := &Validator{validate: validate}
-	err = v.AddTranslation(en.New(), entranslations.RegisterDefaultTranslations)
+
+	err = v.ConfigureTranslation(en.New(),
+		[]TranslationConfig{
+			{
+				Translator: en.New(),
+				Register:   entranslations.RegisterDefaultTranslations,
+			},
+			{
+				Translator: zh.New(),
+				Register:   zhtranslations.RegisterDefaultTranslations,
+			},
+		},
+	)
 	return v, err
 }
 
@@ -109,13 +123,29 @@ func (th *Validator) findTrans(locale ...string) ut.Translator {
 	return trans
 }
 
-func (th *Validator) AddTranslation(translator locales.Translator, register func(*validator.Validate, ut.Translator) error) error {
+type TranslationConfig struct {
+	Translator locales.Translator
+	Register   func(*validator.Validate, ut.Translator) error
+}
 
-	if th.uTranslator == nil {
-		th.uTranslator = ut.New(translator)
+func (th *Validator) ConfigureTranslation(fallback locales.Translator, configs []TranslationConfig) error {
+
+	th.uTranslator = ut.New(fallback)
+
+	for _, config := range configs {
+		err := th.addTranslation(config.Translator, config.Register)
+		if err != nil {
+			return err
+		}
 	}
 
+	return nil
+}
+
+func (th *Validator) addTranslation(translator locales.Translator, register func(*validator.Validate, ut.Translator) error) error {
+
 	err := th.uTranslator.AddTranslator(translator, true)
+
 	if err != nil {
 		return err
 	}
