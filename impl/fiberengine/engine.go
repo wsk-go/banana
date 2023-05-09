@@ -18,6 +18,9 @@ func New(config ...fiber.Config) *FiberEngine {
 	app := fiber.New(config...)
 	app.Use(_recover.New())
 	app.Use(func(ctx *fiber.Ctx) error {
+		defer func() {
+			ctx.Context().RemoveUserValue(contextKey)
+		}()
 		ctx.Context().SetUserValue(contextKey, &Context{
 			ctx: ctx,
 		})
