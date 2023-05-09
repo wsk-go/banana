@@ -224,14 +224,7 @@ func BodyParser[T any](ctx Context, fs ...ValidateFunc) (*T, error) {
 		return nil, err
 	}
 
-	if len(fs) > 0 {
-		for _, f := range fs {
-			if err = f(t); err != nil {
-				return nil, err
-			}
-		}
-	}
-
+	err = validate(&t, fs)
 	return &t, err
 }
 
@@ -242,13 +235,7 @@ func QueryParser[T any](ctx Context, fs ...ValidateFunc) (*T, error) {
 		return nil, err
 	}
 
-	if len(fs) > 0 {
-		for _, f := range fs {
-			if err = f(t); err != nil {
-				return nil, err
-			}
-		}
-	}
+	err = validate(&t, fs)
 	return &t, err
 }
 
@@ -260,13 +247,18 @@ func ParamParser[T any](ctx Context, fs ...ValidateFunc) (*T, error) {
 		return nil, err
 	}
 
+	err = validate(&t, fs)
+	return &t, err
+}
+
+func validate[T any](t *T, fs []ValidateFunc) (err error) {
 	if len(fs) > 0 {
 		for _, f := range fs {
 			if err = f(t); err != nil {
-				return nil, err
+				return err
 			}
 		}
 	}
 
-	return &t, err
+	return nil
 }
