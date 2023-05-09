@@ -2,6 +2,7 @@ package logger
 
 import (
 	"github.com/JackWSK/banana/logger/field"
+	"github.com/JackWSK/banana/utils/stream"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io"
@@ -9,9 +10,9 @@ import (
 
 type Config struct {
 	Level  Level
-	Writer io.Writer
+	Writer []io.Writer
 
-	LevelWriter map[Level]io.Writer
+	LevelWriter map[Level][]io.Writer
 }
 
 type Logger struct {
@@ -22,7 +23,7 @@ type Logger struct {
 // New logger
 func New(config Config) *Logger {
 
-	logger := &Logger{defaultLogger: NewZapLogger(config.Level, config.Writer),
+	logger := &Logger{defaultLogger: newZapLogger(config.Level, config.Writer),
 		loggerForLevel: make(map[Level]*zap.Logger),
 	}
 
@@ -36,8 +37,8 @@ func New(config Config) *Logger {
 }
 
 // ConfigureLoggerForLevel config level for each logger
-func (th *Logger) ConfigureLoggerForLevel(level Level, writer io.Writer) *Logger {
-	th.loggerForLevel[level] = NewZapLogger(level, writer)
+func (th *Logger) ConfigureLoggerForLevel(level Level, writer []io.Writer) *Logger {
+	th.loggerForLevel[level] = newZapLogger(level, writer)
 	return th
 }
 
@@ -78,7 +79,7 @@ func (th *Logger) determineLogger(level Level) *zap.Logger {
 	return th.defaultLogger
 }
 
-func NewZapLogger(level Level, writer io.Writer) *zap.Logger {
+func newZapLogger(level Level, writers []io.Writer) *zap.Logger {
 	// 设置日志级别
 	atomicLevel := zap.NewAtomicLevel()
 	atomicLevel.SetLevel(level)
@@ -99,9 +100,12 @@ func NewZapLogger(level Level, writer io.Writer) *zap.Logger {
 		EncodeName:     zapcore.FullNameEncoder,
 	}
 
+	syncers := stream.Map(stream.Of(writers), func(in io.Writer) zapcore.WriteSyncer {
+		return zapcore.AddSync(in)
+	})
 	core := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(encoderConfig),
-		zapcore.NewMultiWriteSyncer(zapcore.AddSync(writer)),
+		zapcore.NewMultiWriteSyncer(syncers...),
 		atomicLevel, // 日志级别
 	)
 

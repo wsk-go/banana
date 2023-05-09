@@ -3,12 +3,13 @@ package logger
 import (
 	"github.com/JackWSK/banana/logger/field"
 	"go.uber.org/zap/zapcore"
+	"io"
 	"os"
 )
 
 var defaultLogger = New(Config{
 	Level:       zapcore.DebugLevel,
-	Writer:      os.Stdout,
+	Writer:      []io.Writer{os.Stdout},
 	LevelWriter: nil,
 })
 
