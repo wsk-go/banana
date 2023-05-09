@@ -16,12 +16,18 @@ type Config struct {
 	Engine defines.Engine
 }
 
+type MiddlewareFunc func(ctx defines.Context, application defines.Application) error
+
+type Middleware interface {
+	Handle(ctx defines.Context, application defines.Application) error
+}
+
 type Banana struct {
-	beans        []*defines.Bean
-	controllers  []*defines.Bean
-	named        map[string]*defines.Bean
-	typed        map[reflect.Type]*defines.Bean
-	interceptors []defines.Middleware
+	beans       []*defines.Bean
+	controllers []*defines.Bean
+	named       map[string]*defines.Bean
+	typed       map[reflect.Type]*defines.Bean
+	middlewares []Middleware
 
 	engine defines.Engine
 }
@@ -52,19 +58,22 @@ func (th *Banana) GetBeanByName(name string) any {
 	return nil
 }
 
-type MiddlewareFunc func(ctx defines.Context, application defines.Application) error
-
-func (th *Banana) RegisterMiddlewareFunc(fs ...MiddlewareFunc) {
+func (th *Banana) Use(fs ...MiddlewareFunc) {
 	for _, f := range fs {
-		th.engine.UseMiddlewareFunc(func(ctx defines.Context) error {
+		th.engine.Use(func(ctx defines.Context) error {
 			return f(ctx, th)
 		})
 	}
 }
 
-func (th *Banana) RegisterMiddleware(middlewares ...defines.Middleware) {
-	th.engine.UseMiddleware(middlewares...)
-	th.interceptors = append(th.interceptors, middlewares...)
+func (th *Banana) RegisterMiddleware(middlewares ...Middleware) {
+	for _, middleware := range middlewares {
+		th.engine.Use(func(ctx defines.Context) error {
+			return middleware.Handle(ctx, th)
+		})
+	}
+
+	th.middlewares = append(th.middlewares, middlewares...)
 }
 
 func (th *Banana) Import(modules ...defines.ModuleFunc) error {

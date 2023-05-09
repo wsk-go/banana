@@ -24,7 +24,7 @@ func New(config ...fiber.Config) *FiberEngine {
 		return ctx.Next()
 	})
 	return &FiberEngine{
-		app: fiber.New(config...),
+		app: app,
 	}
 }
 
@@ -36,20 +36,11 @@ func (f *FiberEngine) Listen(addr string) error {
 	return f.app.Listen(addr)
 }
 
-func (f *FiberEngine) UseMiddlewareFunc(middlewares ...defines.MiddlewareFunc) {
+func (f *FiberEngine) Use(middlewares ...defines.MiddlewareFunc) {
 	for _, middleware := range middlewares {
 		f.app.Use(func(ctx *fiber.Ctx) error {
 			c := ctx.Context().Value(contextKey).(*Context)
 			return middleware(c)
-		})
-	}
-}
-
-func (f *FiberEngine) UseMiddleware(middlewares ...defines.Middleware) {
-	for _, middleware := range middlewares {
-		f.app.Use(func(ctx *fiber.Ctx) error {
-			c := ctx.Context().Value(contextKey).(*Context)
-			return middleware.Handle(c)
 		})
 	}
 }

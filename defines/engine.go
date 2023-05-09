@@ -27,10 +27,8 @@ type Engine interface {
 	Add(method, path string, handlers Handler)
 	// Listen serves HTTP requests from the given addr.
 	Listen(addr string) error
-	// UseMiddlewareFunc middleware function
-	UseMiddlewareFunc(middlewares ...MiddlewareFunc)
-	// UseMiddleware middleware struct
-	UseMiddleware(middlewares ...Middleware)
+	// Use middleware function
+	Use(middlewares ...MiddlewareFunc)
 }
 
 type Context interface {

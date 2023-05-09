@@ -9,7 +9,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	_recover "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/swagger"
-	"go.uber.org/zap"
 	"reflect"
 	"testing"
 )
@@ -40,15 +39,13 @@ func (u *UserRegister) Configuration() defines.ModuleFunc {
 }
 
 type UserController struct {
-	Logger *logger.Logger `inject:""`
 }
 
 func (th *UserController) HelloWorld() Mapping {
 	return GetMapping{
 		Path: "/hello",
 		Handler: func(ctx defines.Context) error {
-			th.Logger.Info("hello world", zap.Any("aaa", "bbb"))
-			th.Logger.Error("hello world", zap.Any("aaa", "bbb"))
+
 			return ctx.JSON(fiber.Map{"msg": "success"})
 		},
 	}
@@ -194,7 +191,40 @@ func TestGetBean(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+}
 
+type MyMiddleware struct {
+}
+
+func (m *MyMiddleware) Handle(ctx defines.Context) error {
+
+}
+
+func TestMiddleware(t *testing.T) {
+	engine := fiberengine.New()
+	var application = New(Config{
+		Engine: engine,
+	})
+	var err error
+
+	application.Use(func(ctx defines.Context, application defines.Application) error {
+		c := MustGetBeanByType[*UserController](application)
+		fmt.Println(c)
+		return ctx.Next()
+	})
+
+	err = application.RegisterController(&defines.Bean{
+		Value: &UserController{},
+	})
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = application.Run("0.0.0.0:9222")
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestReflect(t *testing.T) {
