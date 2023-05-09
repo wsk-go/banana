@@ -6,7 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var defaultValidator, _ = NewValidator()
+var defaultValidator, _ = New()
 
 func AddTranslation(translator locales.Translator, register func(*validator.Validate, ut.Translator) error) error {
 	return defaultValidator.addTranslation(translator, register)

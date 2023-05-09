@@ -31,7 +31,7 @@ func ValidateEnum(fl validator.FieldLevel) bool {
 	return value.IsValid()
 }
 
-func NewValidator() (*Validator, error) {
+func New() (*Validator, error) {
 	validate := validator.New()
 
 	// register enum
