@@ -1,7 +1,7 @@
 package defines
 
-type Interceptor interface {
-	Pre(ctx Context) error
-	After(ctx Context) error
-	Completion(ctx Context)
+type Middleware interface {
+	Handle(ctx Context) error
 }
+
+type MiddlewareFunc func(ctx Context) error

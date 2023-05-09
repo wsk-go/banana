@@ -21,7 +21,7 @@ type Banana struct {
 	controllers  []*defines.Bean
 	named        map[string]*defines.Bean
 	typed        map[reflect.Type]*defines.Bean
-	interceptors []defines.Interceptor
+	interceptors []defines.Middleware
 
 	engine defines.Engine
 }
@@ -52,7 +52,7 @@ func (th *Banana) GetBeanByName(name string) any {
 	return nil
 }
 
-func (th *Banana) RegisterInterceptors(interceptors ...defines.Interceptor) {
+func (th *Banana) RegisterInterceptors(interceptors ...defines.Middleware) {
 	th.interceptors = append(th.interceptors, interceptors...)
 }
 
@@ -268,6 +268,19 @@ func (th *Banana) callInterceptor(ctx defines.Context, mode string) error {
 
 	return nil
 }
+
+//func (th *Banana) callInterceptors(ctx defines.Context, interceptor defines.Middleware) error {
+//
+//	//for _, interceptor := range th.interceptors {
+//	//	var nextInterceptor = func() {}
+//	//	err := interceptor.Handle(ctx, func(ctx defines.Context) error {
+//	//
+//	//	})
+//	//	if err != nil {
+//	//		return err
+//	//	}
+//	//}
+//}
 
 func (th *Banana) InjectOne(b *defines.Bean) error {
 	for i := 0; i < b.ReflectValue.Elem().NumField(); i++ {

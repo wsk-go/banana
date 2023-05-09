@@ -12,9 +12,17 @@ type FiberEngine struct {
 	app *fiber.App
 }
 
+const contextKey = "__FiberEngineContextKey__"
+
 func New(config ...fiber.Config) *FiberEngine {
 	app := fiber.New(config...)
 	app.Use(_recover.New())
+	app.Use(func(ctx *fiber.Ctx) error {
+		ctx.Context().SetUserValue(contextKey, &Context{
+			ctx: ctx,
+		})
+		return ctx.Next()
+	})
 	return &FiberEngine{
 		app: fiber.New(config...),
 	}
@@ -28,12 +36,28 @@ func (f *FiberEngine) Listen(addr string) error {
 	return f.app.Listen(addr)
 }
 
+func (f *FiberEngine) Use(middlewares ...defines.MiddlewareFunc) {
+	for _, middleware := range middlewares {
+		f.app.Use(func(ctx *fiber.Ctx) error {
+			c := ctx.Context().Value(contextKey).(*Context)
+			return middleware(c)
+		})
+	}
+}
+
+func (f *FiberEngine) UseMiddleware(middlewares ...defines.Middleware) {
+	for _, middleware := range middlewares {
+		f.app.Use(func(ctx *fiber.Ctx) error {
+			c := ctx.Context().Value(contextKey).(*Context)
+			return middleware.Handle(c)
+		})
+	}
+}
+
 func (f *FiberEngine) Add(method, path string, handler defines.Handler) {
 	f.app.Add(method, path, func(ctx *fiber.Ctx) error {
-		//c := ctx.Context().Value("__context__").(*Context)
-		return handler(&Context{
-			ctx: ctx,
-		})
+		c := ctx.Context().Value(contextKey).(*Context)
+		return handler(c)
 	})
 }
 
