@@ -1,6 +1,8 @@
 package stream
 
-import "github.com/JackWSK/banana/types/set"
+import (
+	"github.com/JackWSK/banana/types/set"
+)
 
 type pipeline[T any] struct {
 	next   *pipeline[T]
@@ -54,6 +56,72 @@ func (th *Stream[T]) Map(mapper func(T) T) *Stream[T] {
 		next.Accept(mapper(e))
 	})
 	return th
+}
+
+func (th *Stream[T]) Count() int64 {
+	var count int64 = 0
+	th.accept(func(t T) {
+		count++
+	})
+	return count
+}
+
+//func FlatMapStream[IN any, OUT any](s *Stream[IN], mapper func(IN) *Stream[OUT]) *Stream[OUT] {
+//
+//	last := &pipeline[*Stream[OUT]]{
+//		accept: func(e *Stream[OUT], next *pipeline[*Stream[OUT]]) {
+//			if next != nil {
+//				next.Accept(e)
+//				fmt.Println(e, "------")
+//			}
+//		},
+//	}
+//
+//	return &Stream[OUT]{
+//		head: func() {
+//			s.accept(func(in IN) {
+//				//streamOut := mapper(in)
+//				s2 := mapper(in)
+//				last.Accept(mapper(in))
+//			})
+//		},
+//		last: last,
+//	}
+//}
+
+func (th *Stream[IN]) ForEach(handler func(IN)) {
+	th.accept(handler)
+}
+
+//func SkipStream[IN any, OUT any](stream *Stream[T], n int64) {
+//	index := 0
+//	last := &pipeline[T]{
+//		accept: func(e T, next *pipeline[T]) {
+//
+//		},
+//	}
+//}
+
+func (th *Stream[IN]) ReduceWithDefault(defaultVal IN, handler func(IN, IN) IN) IN {
+	r := defaultVal
+	th.accept(func(in IN) {
+		r = handler(r, in)
+	})
+	return r
+}
+
+func (th *Stream[IN]) Reduce(handler func(IN, IN) IN) IN {
+	var r IN
+	initialized := false
+	th.accept(func(in IN) {
+		if initialized == false {
+			r = in
+			initialized = true
+		} else {
+			r = handler(r, in)
+		}
+	})
+	return r
 }
 
 func (th *Stream[T]) accept(accept func(T)) {

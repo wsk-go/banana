@@ -26,17 +26,43 @@ func TestStream(t *testing.T) {
 	fmt.Println(aa)
 }
 
+type FlatMapValue struct {
+	Code int
+	List []string
+}
+
+//func TestFlatMapStream(t *testing.T) {
+//	aaa := []FlatMapValue{{Code: 1, List: []string{"123", "456"}}, {Code: 1, List: []string{"666", "888"}}}
+//	list := FlatMapStream(Of(aaa), func(val FlatMapValue) []string {
+//		return val.List
+//	}).ToList()
+//	fmt.Println(list)
+//}
+
+func TestStream_ForEach(t *testing.T) {
+	aaa := []string{"111", "222", "333", "444"}
+	Of(aaa).ForEach(func(s string) {
+		println(s)
+	})
+}
+
+func TestStream_Reduce(t *testing.T) {
+	aaa := []int{100, 200, 500, 600}
+	v := Of(aaa).Reduce(func(all int, current int) int {
+		return all + current
+	})
+
+	println(v)
+}
+
 func TestMapStream(t *testing.T) {
 
-	aaa := []string{"123", "123", "1234", "456"}
+	aaa := []string{"111", "222", "333", "444"}
 
 	aa := MapStream(
-		Of(aaa).
-			Filter(func(s string) bool {
-				return s == "123" || s == "1234"
-			}),
-		func(in string) int {
-			return 1
+		Of(aaa),
+		func(in string) string {
+			return in + "hello"
 		},
 	).Distinct()
 
