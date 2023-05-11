@@ -1,8 +1,8 @@
 package logger
 
 import (
-	"github.com/JackWSK/banana/logger/field"
-	"github.com/JackWSK/banana/utils/stream"
+	"github.com/wsk-go/banana/logger/field"
+	"github.com/wsk-go/banana/utils/stream"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"io"

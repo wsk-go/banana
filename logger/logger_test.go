@@ -1,8 +1,8 @@
 package logger
 
 import (
-	"github.com/JackWSK/banana/errors"
-	"github.com/JackWSK/banana/logger/field"
+	"github.com/wsk-go/banana/errors"
+	"github.com/wsk-go/banana/logger/field"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"os"

@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/JackWSK/banana/logger/field"
+	"github.com/wsk-go/banana/logger/field"
 	"go.uber.org/zap/zapcore"
 	"io"
 	"os"

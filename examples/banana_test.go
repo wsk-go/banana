@@ -2,13 +2,13 @@ package examples
 
 import (
 	"fmt"
-	"github.com/JackWSK/banana"
-	"github.com/JackWSK/banana/impl/fiberengine"
-	"github.com/JackWSK/banana/logger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	_recover "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/swagger"
+	"github.com/wsk-go/banana"
+	"github.com/wsk-go/banana/impl/fiberengine"
+	"github.com/wsk-go/banana/logger"
 	"reflect"
 	"testing"
 )

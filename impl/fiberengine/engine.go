@@ -1,9 +1,9 @@
 package fiberengine
 
 import (
-	"github.com/JackWSK/banana"
 	"github.com/gofiber/fiber/v2"
 	_recover "github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/wsk-go/banana"
 	"mime/multipart"
 	"time"
 )

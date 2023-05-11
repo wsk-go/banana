@@ -1,7 +1,7 @@
 package stream
 
 import (
-	"github.com/JackWSK/banana/types/set"
+	"github.com/wsk-go/banana/types/set"
 )
 
 type pipeline[T any] struct {

@@ -1,7 +1,6 @@
 package validator
 
 import (
-	"github.com/JackWSK/banana/errors"
 	"github.com/go-playground/locales"
 	"github.com/go-playground/locales/en"
 	"github.com/go-playground/locales/zh"
@@ -9,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	entranslations "github.com/go-playground/validator/v10/translations/en"
 	zhtranslations "github.com/go-playground/validator/v10/translations/zh"
+	"github.com/wsk-go/banana/errors"
 	"reflect"
 )
 

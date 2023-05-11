@@ -1,4 +1,4 @@
-module github.com/JackWSK/banana
+module github.com/wsk-go/banana
 
 go 1.20
 

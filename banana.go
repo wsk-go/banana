@@ -2,9 +2,9 @@ package banana
 
 import (
 	"fmt"
-	"github.com/JackWSK/banana/errors"
-	"github.com/JackWSK/banana/hook"
-	"github.com/JackWSK/banana/utils/stream"
+	"github.com/wsk-go/banana/errors"
+	"github.com/wsk-go/banana/hook"
+	"github.com/wsk-go/banana/utils/stream"
 	"reflect"
 )
 

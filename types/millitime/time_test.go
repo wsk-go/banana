@@ -3,7 +3,7 @@ package millitime
 import (
 	"context"
 	"fmt"
-	"github.com/JackWSK/banana/utils"
+	"github.com/wsk-go/banana/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo"
