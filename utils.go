@@ -93,7 +93,7 @@ var mappingType = reflect.TypeOf((*Mapping)(nil)).Elem()
 func isMappingMethod(method reflect.Method) bool {
 	if method.Type.NumOut() == 1 {
 		mt := method.Type.Out(0)
-		return mappingType.AssignableTo(mt)
+		return mt.Implements(mappingType)
 	}
 
 	return false
