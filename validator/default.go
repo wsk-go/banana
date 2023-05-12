@@ -31,11 +31,11 @@ func StructWithLocale(obj any, locale ...string) error {
 }
 
 func Var(fieldName string, field any, tag string) error {
-	return defaultValidator.Var(field, tag)
+	return defaultValidator.Var(fieldName, field, tag)
 }
 
 func VarWithLocale(fieldName string, field any, tag string, locale ...string) error {
-	return defaultValidator.VarWithLocale(field, tag, locale...)
+	return defaultValidator.VarWithLocale(fieldName, field, tag, locale...)
 }
 
 func Default() *Validator {
