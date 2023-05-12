@@ -30,6 +30,14 @@ func StructWithLocale(obj any, locale ...string) error {
 	return defaultValidator.StructWithLocale(obj, locale...)
 }
 
+func Var(field any, tag string) error {
+	return defaultValidator.Var(field, tag)
+}
+
+func VarWithLocale(field any, tag string, locale ...string) error {
+	return defaultValidator.VarWithLocale(field, tag, locale...)
+}
+
 func Default() *Validator {
 	return defaultValidator
 }

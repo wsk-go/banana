@@ -86,22 +86,44 @@ func (th *Validator) StructWithLocale(obj any, locale ...string) error {
 	if valueType == reflect.Struct {
 		err := th.validate.Struct(obj)
 		if err != nil {
-			ve := err.(validator.ValidationErrors)
-			for _, vee := range ve {
-				if th.uTranslator != nil {
-					trans := th.findTrans(locale...)
-					message := vee.Translate(trans)
-					return errors.NewValidationError(message)
-				} else {
-					return errors.NewValidationError(vee.Error())
-				}
-			}
+			return th.handleError(err, locale)
 		}
 	}
 	return nil
 }
 
-func (th *Validator) findTrans(locale ...string) ut.Translator {
+func (th *Validator) Var(field any, tag string) error {
+	if err := th.validate.Var(field, tag); err != nil {
+		return th.handleError(err, nil)
+	}
+
+	return nil
+}
+
+func (th *Validator) VarWithLocale(field any, tag string, locale ...string) error {
+	if err := th.validate.Var(field, tag); err != nil {
+		return th.handleError(err, locale)
+	}
+
+	return nil
+}
+
+func (th *Validator) handleError(err error, locale []string) error {
+	ve := err.(validator.ValidationErrors)
+	for _, vee := range ve {
+		if th.uTranslator != nil {
+			trans := th.findTrans(locale)
+			message := vee.Translate(trans)
+			return errors.NewValidationError(message)
+		} else {
+			return errors.NewValidationError(vee.Error())
+		}
+	}
+
+	return err
+}
+
+func (th *Validator) findTrans(locale []string) ut.Translator {
 
 	if th.uTranslator == nil {
 		panic("uniTranslator is nil")
