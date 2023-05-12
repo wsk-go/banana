@@ -1,6 +1,7 @@
 package validator
 
 import (
+	"fmt"
 	"github.com/go-playground/locales"
 	"github.com/go-playground/locales/en"
 	"github.com/go-playground/locales/zh"
@@ -86,35 +87,35 @@ func (th *Validator) StructWithLocale(obj any, locale ...string) error {
 	if valueType == reflect.Struct {
 		err := th.validate.Struct(obj)
 		if err != nil {
-			return th.handleError(err, locale)
+			return th.handleError("", err, locale)
 		}
 	}
 	return nil
 }
 
-func (th *Validator) Var(field any, tag string) error {
+func (th *Validator) Var(fieldName string, field any, tag string) error {
 	if err := th.validate.Var(field, tag); err != nil {
-		return th.handleError(err, nil)
+		return th.handleError(fieldName, err, nil)
 	}
 
 	return nil
 }
 
-func (th *Validator) VarWithLocale(field any, tag string, locale ...string) error {
+func (th *Validator) VarWithLocale(fieldName string, field any, tag string, locale ...string) error {
 	if err := th.validate.Var(field, tag); err != nil {
-		return th.handleError(err, locale)
+		return th.handleError(fieldName, err, locale)
 	}
 
 	return nil
 }
 
-func (th *Validator) handleError(err error, locale []string) error {
+func (th *Validator) handleError(fieldName string, err error, locale []string) error {
 	ve := err.(validator.ValidationErrors)
 	for _, vee := range ve {
 		if th.uTranslator != nil {
 			trans := th.findTrans(locale)
 			message := vee.Translate(trans)
-			return errors.NewValidationError(message)
+			return errors.NewValidationError(fmt.Sprintf("%s%s", fieldName, message))
 		} else {
 			return errors.NewValidationError(vee.Error())
 		}
