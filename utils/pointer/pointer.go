@@ -1,10 +1,10 @@
 package pointer
 
-func ToPtr[T any](s T) *T {
+func To[T any](s T) *T {
 	return &s
 }
 
-func ToValue[T any](t *T) T {
+func Value[T any](t *T) T {
 	if t == nil {
 		var zero T
 		return zero

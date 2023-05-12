@@ -1,4 +1,4 @@
-package pointer
+package assert
 
 import "reflect"
 
