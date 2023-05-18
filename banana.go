@@ -238,7 +238,6 @@ func (th *Banana) handleMapping() error {
 				if mapping, ok := value.Interface().(Mapping); ok {
 					handler := mapping.GetHandler()
 					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), func(context Context) error {
-
 						if len(mapping.GetRequiredQuery()) > 0 {
 							for _, key := range mapping.GetRequiredQuery() {
 								if v := context.Query(key); v == "" {
