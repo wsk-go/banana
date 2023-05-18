@@ -14,8 +14,8 @@ func Value[T any](t *T) T {
 	return *t
 }
 
-// ZeroTo return nil if value is zero
-func ZeroTo[T any](t T) *T {
+// ZTo return nil if value is zero
+func ZTo[T any](t T) *T {
 	if assert.IsZero(t) {
 		return nil
 	}
