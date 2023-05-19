@@ -168,7 +168,11 @@ func (th *Banana) Run(addr string) error {
 	}
 
 	err = th.handleMapping()
+	if err != nil {
+		return err
+	}
 
+	err = th.callApplicationHook()
 	if err != nil {
 		return err
 	}
@@ -210,14 +214,11 @@ func (th *Banana) callHook(beans []*Bean) error {
 
 	var configurations []ConfigurationFunc
 	for _, b := range beans {
-		if setup, ok := b.Value.(hook.BeanLoaded); ok {
-			setup.Loaded()
+		if loaded, ok := b.Value.(hook.BeanLoaded); ok {
+			if err := loaded.BeanLoaded(); err != nil {
+				return err
+			}
 		}
-
-		// continue configuration
-		//if beanConfiguration, ok := b.Value.(defines.BeanConfiguration); ok {
-		//	configurations = append(configurations, beanConfiguration.Configuration())
-		//}
 	}
 
 	if len(configurations) > 0 {
@@ -228,6 +229,19 @@ func (th *Banana) callHook(beans []*Bean) error {
 		err = th.prepareBeans()
 		if err != nil {
 			return err
+		}
+	}
+
+	return nil
+}
+
+func (th *Banana) callApplicationHook() error {
+
+	for _, b := range th.beans {
+		if loaded, ok := b.Value.(hook.ApplicationLoaded); ok {
+			if err := loaded.ApplicationLoaded(); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -69,7 +69,7 @@ type TestBean struct {
 	User2 *User `inject:"user2"`
 }
 
-func (t *TestBean) Loaded() {
+func (t *TestBean) BeanLoaded() {
 	fmt.Println("loaded")
 }
 
