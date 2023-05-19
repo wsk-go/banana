@@ -3,7 +3,6 @@ package banana
 import (
 	"fmt"
 	"github.com/wsk-go/banana/errors"
-	"github.com/wsk-go/banana/hook"
 	"github.com/wsk-go/banana/utils/stream"
 	"reflect"
 )
@@ -214,7 +213,7 @@ func (th *Banana) callHook(beans []*Bean) error {
 
 	var configurations []ConfigurationFunc
 	for _, b := range beans {
-		if loaded, ok := b.Value.(hook.BeanLoaded); ok {
+		if loaded, ok := b.Value.(BeanLoaded); ok {
 			if err := loaded.BeanLoaded(); err != nil {
 				return err
 			}
@@ -238,7 +237,7 @@ func (th *Banana) callHook(beans []*Bean) error {
 func (th *Banana) callApplicationHook() error {
 
 	for _, b := range th.beans {
-		if loaded, ok := b.Value.(hook.ApplicationLoaded); ok {
+		if loaded, ok := b.Value.(ApplicationLoaded); ok {
 			if err := loaded.ApplicationLoaded(); err != nil {
 				return err
 			}

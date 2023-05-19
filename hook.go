@@ -1,10 +1,10 @@
-package hook
+package banana
 
 type BeanLoaded interface {
-	BeanLoaded() error
+	BeanLoaded(application *Banana) error
 }
 
 // ApplicationLoaded call after all bean has been registered and injected
 type ApplicationLoaded interface {
-	ApplicationLoaded() error
+	ApplicationLoaded(application *Banana) error
 }
