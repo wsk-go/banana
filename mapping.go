@@ -79,6 +79,7 @@ type PostMapping struct {
 	Path          string
 	Handler       Handler
 	RequiredQuery []string
+	UserInfo      map[string]any
 }
 
 func (th PostMapping) GetMethod() string {
@@ -95,6 +96,14 @@ func (th PostMapping) GetHandler() Handler {
 
 func (th PostMapping) GetRequiredQuery() []string {
 	return th.RequiredQuery
+}
+
+func (th PostMapping) GetUserInfo(key string) (any, bool) {
+	if th.UserInfo == nil {
+		return nil, false
+	}
+	v, ok := th.UserInfo[key]
+	return v, ok
 }
 
 type PutMapping struct {
