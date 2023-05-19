@@ -28,7 +28,8 @@ type Banana struct {
 	named       map[string]*Bean
 	typed       map[reflect.Type]*Bean
 
-	engine Engine
+	engine   Engine
+	mappings []Mapping
 }
 
 func New(config Config) *Banana {
@@ -155,6 +156,10 @@ func (th *Banana) RegisterBean(beans ...*Bean) error {
 	return nil
 }
 
+func (th *Banana) GetMappings() []Mapping {
+	return th.mappings
+}
+
 func (th *Banana) Run(addr string) error {
 	err := th.prepareBeans()
 
@@ -236,6 +241,10 @@ func (th *Banana) handleMapping() error {
 				method := controller.reflectValue.Method(i)
 				value := method.Call(nil)[0]
 				if mapping, ok := value.Interface().(Mapping); ok {
+
+					// add mapping to list
+					th.mappings = append(th.mappings, mapping)
+
 					handler := mapping.GetHandler()
 					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), func(context Context) error {
 						if len(mapping.GetRequiredQuery()) > 0 {

@@ -9,6 +9,7 @@ type Mapping interface {
 	GetPath() string
 	GetHandler() Handler
 	GetRequiredQuery() []string
+	GetUserInfo(key string) (any, bool)
 }
 
 type RequestMapping struct {
@@ -16,6 +17,7 @@ type RequestMapping struct {
 	Path          string
 	Handler       Handler
 	RequiredQuery []string
+	UserInfo      map[string]any
 }
 
 func (th RequestMapping) GetMethod() string {
@@ -34,10 +36,19 @@ func (th RequestMapping) GetRequiredQuery() []string {
 	return th.RequiredQuery
 }
 
+func (th RequestMapping) GetUserInfo(key string) (any, bool) {
+	if th.UserInfo == nil {
+		return nil, false
+	}
+	v, ok := th.UserInfo[key]
+	return v, ok
+}
+
 type GetMapping struct {
 	Path          string
 	Handler       Handler
 	RequiredQuery []string
+	UserInfo      map[string]any
 }
 
 func (th GetMapping) GetMethod() string {
@@ -54,6 +65,14 @@ func (th GetMapping) GetHandler() Handler {
 
 func (th GetMapping) GetRequiredQuery() []string {
 	return th.RequiredQuery
+}
+
+func (th GetMapping) GetUserInfo(key string) (any, bool) {
+	if th.UserInfo == nil {
+		return nil, false
+	}
+	v, ok := th.UserInfo[key]
+	return v, ok
 }
 
 type PostMapping struct {
@@ -82,6 +101,7 @@ type PutMapping struct {
 	Path          string
 	Handler       Handler
 	RequiredQuery []string
+	UserInfo      map[string]any
 }
 
 func (th PutMapping) GetMethod() string {
@@ -100,10 +120,19 @@ func (th PutMapping) GetRequiredQuery() []string {
 	return th.RequiredQuery
 }
 
+func (th PutMapping) GetUserInfo(key string) (any, bool) {
+	if th.UserInfo == nil {
+		return nil, false
+	}
+	v, ok := th.UserInfo[key]
+	return v, ok
+}
+
 type DeleteMapping struct {
 	Path          string
 	Handler       Handler
 	RequiredQuery []string
+	UserInfo      map[string]any
 }
 
 func (th DeleteMapping) GetMethod() string {
@@ -120,4 +149,12 @@ func (th DeleteMapping) GetHandler() Handler {
 
 func (th DeleteMapping) GetRequiredQuery() []string {
 	return th.RequiredQuery
+}
+
+func (th DeleteMapping) GetUserInfo(key string) (any, bool) {
+	if th.UserInfo == nil {
+		return nil, false
+	}
+	v, ok := th.UserInfo[key]
+	return v, ok
 }
