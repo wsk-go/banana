@@ -213,6 +213,13 @@ type Context interface {
 
 	// Cookie sets a cookie by passing a cookie struct.
 	Cookie(cookie *Cookie)
+
+	// RoutePath Path you write on route
+	RoutePath() string
+	// RouteMethod Method you write on route
+	RouteMethod() string
+	// RouteParams Params you write on route
+	RouteParams() []string
 }
 
 type ValidateFunc func(obj any) error

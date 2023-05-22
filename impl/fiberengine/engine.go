@@ -247,3 +247,15 @@ func (c *Context) Body() []byte {
 func (c *Context) RawContext() any {
 	return c.ctx
 }
+
+func (c *Context) RoutePath() string {
+	return c.ctx.Route().Path
+}
+
+func (c *Context) RouteMethod() string {
+	return c.ctx.Route().Method
+}
+
+func (c *Context) RouteParams() []string {
+	return c.ctx.Route().Params
+}
