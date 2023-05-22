@@ -165,8 +165,16 @@ func (th *Banana) GetMapping(ctx Context) Mapping {
 }
 
 func (th *Banana) Run(addr string) error {
-	err := th.prepareBeans()
+	err := th.RegisterBean(&Bean{
+		Value: th,
+		Name:  "",
+	})
 
+	if err != nil {
+		return nil
+	}
+
+	err = th.prepareBeans()
 	if err != nil {
 		return err
 	}
