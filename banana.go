@@ -238,7 +238,7 @@ func (th *Banana) callApplicationHook() error {
 
 	for _, b := range th.beans {
 		if loaded, ok := b.Value.(ApplicationLoaded); ok {
-			if err := loaded.ApplicationLoaded(); err != nil {
+			if err := loaded.ApplicationLoaded(th); err != nil {
 				return err
 			}
 		}
