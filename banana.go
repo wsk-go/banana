@@ -27,8 +27,9 @@ type Banana struct {
 	named       map[string]*Bean
 	typed       map[reflect.Type]*Bean
 
-	engine   Engine
-	mappings []Mapping
+	engine     Engine
+	mappings   []Mapping
+	mappingMap map[string]Mapping
 }
 
 func New(config Config) *Banana {
@@ -159,6 +160,10 @@ func (th *Banana) GetMappings() []Mapping {
 	return th.mappings
 }
 
+func (th *Banana) GetMapping(ctx Context) Mapping {
+	return th.mappingMap[fmt.Sprintf("%s_%s", ctx.RouteMethod(), ctx.RoutePath())]
+}
+
 func (th *Banana) Run(addr string) error {
 	err := th.prepareBeans()
 
@@ -248,6 +253,9 @@ func (th *Banana) callApplicationHook() error {
 }
 
 func (th *Banana) handleMapping() error {
+	if th.mappingMap == nil {
+		th.mappingMap = make(map[string]Mapping)
+	}
 	for _, controller := range th.controllers {
 		for i := 0; i < controller.reflectType.NumMethod(); i++ {
 			if isMappingMethod(controller.reflectType.Method(i)) {
@@ -257,6 +265,8 @@ func (th *Banana) handleMapping() error {
 
 					// add mapping to list
 					th.mappings = append(th.mappings, mapping)
+					// add mapping to map
+					th.mappingMap[fmt.Sprintf("%s_%s", mapping.GetMethod(), mapping.GetPath())] = mapping
 
 					handler := mapping.GetHandler()
 					th.engine.Add(mapping.GetMethod(), mapping.GetPath(), func(context Context) error {
