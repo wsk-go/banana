@@ -214,7 +214,7 @@ func (th *Banana) callHook(beans []*Bean) error {
 	var configurations []ConfigurationFunc
 	for _, b := range beans {
 		if loaded, ok := b.Value.(BeanLoaded); ok {
-			if err := loaded.BeanLoaded(); err != nil {
+			if err := loaded.BeanLoaded(th); err != nil {
 				return err
 			}
 		}
